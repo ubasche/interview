@@ -66,8 +66,8 @@ Create a main.tf file
 # Provider
 provider "aws" {
   region  = "us-east-1"
-  access_key = "AKIAJ2D7PDJASDSWEXNA"
-  secret_key = "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"
+  access_key = "AKIAJ2D7XXXXXXDSWEXNA"
+  secret_key = "/kp8MIg5xxxxxxxxxxxxxx4roNT+TjvCrbczts"
 }
 
 # EC2 Instance
@@ -172,8 +172,8 @@ main.tf
 # Configure the AWS Provider
 provider "aws" {
   region  = "us-east-1"
-  access_key = "AKIAJ2D7PDJASDSWEXNA"
-  secret_key = "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"
+  access_key = "AKIAXXXXXXXXXXEXNA"
+  secret_key = "/kp8MIxxxxxxxxxxxxxxxxxx+TjvCrbczts"
 }
 
 # 1. Create VPC
