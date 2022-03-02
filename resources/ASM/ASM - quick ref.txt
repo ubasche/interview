@@ -1,0 +1,129 @@
+
+ASM
+---
+
+- Show asm settings
+    show parameter asm_diskstring
+    show parameter asm_diskgroup
+
+- Create a diskgroup
+  The 'ORCL:AVOL*' bit is defined in the asm_diskstring.
+    create diskgroup asmgrp2 disk 'ORCL:AVOL10', 'ORCL:AVOL10';
+
+- Views
+	v$asm_disk
+	v$asm_diskgroup
+	v$asm_operation
+
+
+- Add and drop disks from a diskgroup
+	ALTER DISKGROUP <dg_name> DROP DISK <disk_name>;
+	ALTER DISKGROUP DATA_GRP1 ADD DISK 'ORCL:DB_RECOVER24';
+
+- Check the progress of rebalance operations
+	select OPERATION, EST_MINUTES, STATE from v$asm_operation;
+
+	- You can change the parallelism of the rebalance operation
+
+- Create a tablespace with ASM disks
+	create undo tablespace undo datafile '+DATA_GRP1' size 1 G;
+
+- Use srvctl to administer asm instances
+	srvctl stop asm -n <node_name> [-i <asm_instance_name>] [-o <stop_options]
+	srvctl start asm -n `hostname`
+
+
+"ASM archive log area is full"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Check for space in ASM disk groups:
+    select NAME, STATE, TOTAL_MB, FREE_MB, USABLE_FILE_MB from v$asm_diskgroup;
+
+Check the parameters
+    show parameter archive
+    show parameter recovery
+
+    ==> If recovery area is used, the log_archive_dest* parameters are unset.
+
+Check if there is space left in the recovery file dest:
+    select * from v$recovery_file_dest;
+
+Increase the usable space or run a RMAN backup to free space.
+    alter system set db_recovery_file_dest_size=10g scope=both;
+        OR
+    RMAN backup
+
+
+ASM command line tool: asmcmd
+-----------------------------
+
+$ asmcmd
+
+ASMCMD> lsdg
+ASMCMD> ls -ltr
+ASMCMD> cd RAC10GDB/DATAFILE
+ASMCMD> pwd
+
+
+
+Moving one disk from diskgroup DB_RECOVER to DATA_GRP1
+======================================================
+
+SQL> select GROUP_NUMBER, NAME, type 
+     from v$asm_diskgroup;
+
+GROUP_NUMBER NAME           TYPE
+------------ -------------- -------------
+           1 DATA_DPC       EXTERN
+           2 DATA_GRP1      EXTERN
+           3 DB_RECOVER     EXTERN
+
+
+SQL> SELECT NAME, free_mb, total_mb, header_status, PATH	
+     FROM V$ASM_DISK WHERE GROUP_NUMBER = 3
+
+NAME                              FREE_MB   TOTAL_MB HEADER_STATU PATH
+------------------------------ ---------- ---------- ------------ -----------------
+DB_RECOVER                          29626      34851 MEMBER       ORCL:DB_RECOVER
+DB_RECOVER17                        29645      34851 MEMBER       ORCL:DB_RECOVER17
+DB_RECOVER20                        29616      34851 MEMBER       ORCL:DB_RECOVER20
+DB_RECOVER21                        29633      34851 MEMBER       ORCL:DB_RECOVER21
+DB_RECOVER23                        29627      34851 MEMBER       ORCL:DB_RECOVER23
+DB_RECOVER24                        29633      34851 MEMBER       ORCL:DB_RECOVER24
+DB_RECOVER7                         29629      34851 MEMBER       ORCL:DB_RECOVER7
+
+7 rows selected.
+
+Drop the identified disks from existing diskgroup.
+Oracle will automatically move data found on these disks to other groups. 
+If there is not enough space available the command will fail.
+
+    ASM:SQL> ALTER DISKGROUP <dg_name> DROP DISK <disk_name>;
+
+
+the command returns before the drop and rebalance is complete.
+Do not reuse the disks until the header_status column for this disk 
+in v$asm_disk changes from MEMBER to FORMER.
+
+    ASM:SQL> SELECT NAME, free_mb, total_mb, header_status, PATH 
+             FROM V$ASM_DISK;
+
+
+You can also query v$ASM_OPERATION to determine the amount of time remaining.
+
+    ASM:SQL> select OPERATION, EST_MINUTES, STATE
+             from v$asm_operation;
+
+
+Once completed you can add the identified disks to the DATA_GRP1 diskgroup.
+
+    ASM:SQL> ALTER DISKGROUP DATA_GRP1 ADD DISK 'ORCL:DB_RECOVER24';
+
+
+Query v$ASM_OPERATION to determine the amount of time remaining
+
+    ASM:SQL> select OPERATION, EST_MINUTES, STATE
+             from v$asm_operation;
+
+
+
+

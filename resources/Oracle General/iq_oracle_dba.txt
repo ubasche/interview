@@ -1,0 +1,2006 @@
+
+Interview Questions - Oracle DBA
+================================
+
+Sections:
+    * Non TechnicA. 
+    * GenerA. 
+    * Configuration
+    * Backup & Recovery
+    * RMA. 
+    * Trouble Shooting
+    * High Availability
+        - Data Guard
+        - RAC (Real Application Cluster)
+        - Active/passive node clusters
+        - Oracle Streams
+    * Tuning
+    * Design
+    * OAS (Oracle Appliation Server)
+    * Unix
+    * New
+
+xxx
+===============
+ Non TechnicA. 
+===============
+
+--------------------------------------------------------------------------- 
+Q. What are your strengths and weaknesses?
+A. 
+   Strengths (tailor for position offered):
+    - Allways keep up with new technology and have worked on complex systems.
+    - I am working very methodicly.
+    - I work fast and complete tasks quickly (don't waste time).
+    - Have successfully worked in different environments (.com and banks).
+    - Have worked in development and production environments.
+    - Have worked with the complete toolset of Oracle over several years.
+
+   Weaknesses:
+    - I have worked for Unix for a long time and know it very well, but I
+      want to improve on my Unix adminstrator skills. Some positions need
+      the DBA to do Unix administration. I currently have Linux running A. 
+      home to be able to improve my skills. New techology (web, storrage)
+      makes it neccessary to have more admin like Unix skills.
+
+    - I have worked with Oracle most of the time. I want increase my
+      non-Oracle knowledge. I recently installed SQLServer at home to fresh
+      up my knowledge of it.
+
+--------------------------------------------------------------------------- 
+Q. Do you have any questions?
+A. 
+    - Can you tell me about your career?
+    - What keeps you here at this company? Why did you join it?
+
+    - What are your plans for the future in technology? Are you plan to use
+      any of the new Oracle technologies like RAC, 10g, ...?
+    - How does a typical day for this role look? Are there regular teA. 
+      meetings?
+    - Where is the job located? 
+    - What might my first assignment be? 
+    - What is the longterm strategy of the company?
+    - How is the dress code?
+    - Is there a lot of weekend and out of hours work?
+
+    - How many other candidates do you interview?
+    - In what timescales are you going to make your decission?
+    - Are there possible extensions to the contract?
+    - What are the current projects of the team/company?
+
+--------------------------------------------------------------------------- 
+Q. Why should we hire you?
+A. 
+    - You are looking for a Oracle DBA that ... I am a very good match to
+      your requirements, because ...
+    - Knowledge of newest technology.
+    - Used to work under pressure.
+    - Have successfully worked in different environments (.com and banks).
+    - Have always been successful at the places I have worked.
+
+    Well, this is the key question! In your job description you clearly
+    state that you are looking for someone who is… and who can do… Is thA. 
+    an accurate description? 
+
+    You can then conclude by saying: 
+    I definitely believe I have the skills and qualities you are looking
+    for to be a success in this job. I'm a team player. I listen and A. 
+    more than willing to learn from my superiors and I have the desire to
+    do very well. 
+    Is there anything that I have left out that you would like me to expand
+    on? 
+
+    With eleven years' experience working as Oracle DBA and developer in
+    the financial and other leading industries and my proven record of
+    successfully completing projects, I'm confident I would be a greA. 
+    addition to your team. 
+--------------------------------------------------------------------------- 
+
+
+xxx
+=========
+ GENERAL 
+=========
+
+--------------------------------------------------------------------------- 
+Q. How many databases and what sizes? 
+A. 
+                No of    No of
+    Company     Servers  DBs     Max size   Biggest table
+    ----------  -------  -----   --------   ------------------------------- 
+    boo.com          10     25       5 GB
+    Nextcard          3      5       1 GB
+    GNI               8     23     100 GB       6 GB - single table (DODGE)
+                                                4 GB - partitioned view
+    Coutts           26     75       8 GB       4 GB - ibba_online
+    Ins-Sure         26     40       2 GB
+    RBS               ?      ?      10 GB
+    Tesco            20     45       3 TB     125 GB - TSL_TRAN_DATA_HISTORY
+                                               95 GB - ITEM_ZONE_PRICE 
+                                                       (1 billion rows)
+    RBS 2           150    250       2 TB   Note: All 250 DBs are produciton DBs.
+      
+--------------------------------------------------------------------------- 
+Q. What comprises an Oracle Instance?
+A. 
+    System Global Area + Background processes
+
+--------------------------------------------------------------------------- 
+| Q. Explain the memory structures associated with Oracle.
+| A. 
+|     * System Global Area (SGA), which is shared by all server and
+|       background processes and holds the following:
+|           - Database buffer cache
+|           - Redo log buffer
+|           - Shared pool
+|           - Large pool (optional)
+|           - Java pool
+| 
+|     * Program Global Areas (PGA), which is private to each server and
+|       background process; there is one PGA for each process. The PGA holds
+|       the following:
+|           - Stack areA. 
+|           - Data areA. 
+|       It is used for sorts and joins (e.g. hash-joins , bitmap merge, ...).
+--------------------------------------------------------------------------- 
+| Q. What ist the SGA (System Global Area)?
+| 
+| A. The SGA consists of:
+| 
+|    - Shared Pool: stores most recently used SQL
+|        - Library Cache: text of SQL statement
+|                         parse tree + compiled version of statement
+|                         execution plA. 
+|        - Data Dictionary Cache: table and column definitions
+|                                 privileges
+|    - DB Buffer Cache: stores most recetly used data
+|    - Redo Log Buffer: register changes made to the database
+| 
+--------------------------------------------------------------------------- 
+Q. Name the mandatory Oracle background processes on a Unix system.
+A. 
+   Mandatory processes:
+   - PMON    process monitor
+   - SMON    system monitor 
+   - DBW0    database writer
+   - LGWR    log writer
+   - CKPT    checkpoint
+
+   Optional processes:
+   - ARCH    archiver (only if database is in archive log mode)
+   - RECO    recoverer process (to resolve distributed transactions)
+   - LCKn    lock process (for inter-instance locking in the 
+                           Oracle Parallel Server)
+   - Dnnn    dispacher process (for multi-threaded server)
+   - SNPn    job queue (automatically refresh table snapshots)
+   - QMNn    queue monitor (monitor the message queues for 
+                            Oracle Advanced Queuing)
+
+--------------------------------------------------------------------------- 
+Q. What do the oracle background processes do?
+A. 
+   pmon : Performs process recovery when a user process fails.
+          Cleans up the cache and frees resources that the process was using.
+   smon : Performs instance recovery.
+   dbw0 : Writes modified blocks from the buffer cache to the datafiles.
+   lgwr : Writes redo log entries to disk.
+   ckpt : Signals the DBWn process to write data to datafiles.
+   arc0 : Copies the online redo log files to archival storage.
+
+--------------------------------------------------------------------------- 
+Q. What states can an Oracle database be in and what can you do in them?
+A.  
+    SHUTDOWN
+        - Cold backup.
+
+|     NOMOUNT
+|         Oracle reads parameter file (init.ora).
+| 
+|         Operations:
+|             - Database creation.
+|             - Control file creation.
+
+|     MOUNT
+|         Oracle reads control files 
+|         This command starts the instance and mounts the database without
+|         opening it.   
+| 
+|         Recovery operations:
+|             - Recover a database;
+|             - Recover a tablespace;
+|         Maintenance operations:
+|             - Renaming datafiles.
+|             - Altering redo logs.
+|             - Enabling archiving. 
+
+    OPEN
+        The database opens online datafiles and online redo logs, and
+        usually will acquire one or more rollback segments.
+
+        Operations:
+            - Normal database usage.
+
+--------------------------------------------------------------------------- 
+Q. Compare Oracle to any other database that you know. Why 
+   whould you prefer to work on one and not on the other? 
+A. 
+    Oracle:
+     - Runs on many platforms.
+     - Interface and tools are learning intensive.
+     - Very powerfull and scales well.
+     - Many features
+     - Very stable
+     - Expensive
+
+    SQL Server:
+     - Runs only on Windows.
+     - Good interface and tools.
+     - Good integration with Microsoft tools/products.
+     - Less expensive than Oracle.
+
+--------------------------------------------------------------------------- 
+Q. How to rename a Datafile ?
+A. 
+    - Take the non-SYSTEM tablespace that contains the datafiles offline. 
+
+    - Copy the datafiles to the new location or new names.
+
+    - Use ALTER TABLESPACE command with the RENAME DATAFILE option to 
+      change the filenames within the database (the new file must already 
+      exist).
+
+      ALTER TABLESPACE users
+      RENAME DATAFILE 'filename1', 'filename2' 
+                   TO 'filename3', 'filename4';
+
+--------------------------------------------------------------------------- 
+Q. How does Oracle keep a read-consistent view of data in a multi-user 
+   database?
+A. 
+    Rollback Segments keep the before image.
+
+--------------------------------------------------------------------------- 
+| Q. What is a checkpoint?
+| 
+| A. Event when all modified database buffers are written to the data file.
+| 
+--------------------------------------------------------------------------- 
+Q. How does Oracle V7 readonly snapshots differ in Oracle 8?
+A. 
+    - Oracle 7 : Rowid snapshots.
+    - Oracle 8 : Primary key snapshots (Rowid snapshots are still
+                 supported)
+    - Oracle 8i: Snapshots are materialized views (Only one table for
+                 the snapshot. No SNAP$ table with associated view)
+
+--------------------------------------------------------------------------- 
+Q. Name different types of indexes.
+A. 
+    - Unique index
+    - Non-unique index
+    - Primary key index        ???
+    - Concatenated index
+
+    - B-tree index
+    - Bitmap index
+    - Function based index
+
+--------------------------------------------------------------------------- 
+| Q. What problems can you get when using the spfile?
+| A. If using the spfile and changing parameters you might not be able to
+|    restart the database.
+|    E.g. Error when setting old and new buffer cache parameters:
+| 
+|     SQL> startup mount
+|     ORA-00381: cannot use both new and old parameters for buffer cache size
+|     specification.
+|     
+|    Fix:
+|     create spfile from pfile;
+|     correct the parameters
+|     startup the database
+--------------------------------------------------------------------------- 
+Q. What does the process of PARSING a SQL statement perform?
+A. 
+    - Checks for correct syntax.
+    - Checks for correct access privileges.
+    - Determines execution path.
+    - Checks for correct table and column definitions.
+    - Acquires parse locks on objects.
+
+--------------------------------------------------------------------------- 
+Q.  What actions will end a transaction?
+A. 
+    - COMMIT.
+    - ROLLBACK.
+    - Executing a DDL statement.
+    - Disconnecting from Oracle. 
+    - Abnormal termination of a user process
+
+--------------------------------------------------------------------------- 
+Q. What command or statement will verify the integrity of each block 
+   in a table and all of the indexes on that table?
+A. 
+    ANALYZE TABLE VALIDATE STRUCTURE CASCADE
+
+--------------------------------------------------------------------------- 
+Q. Why use synonyms?
+A. 
+   - Hide name and owner of an object
+   - Provide local transparency for remote objects of a distributed 
+     database
+   - Simplify SQL statements for database users
+
+--------------------------------------------------------------------------- 
+| Q. What is the shared pool in Oracle 7?
+| A. 
+|     Store of currently parsed SQL statements and their execution plA. 
+| 
+--------------------------------------------------------------------------- 
+Q. Why use database procedures and packages in Oracle 7?
+A. 
+   - Ensure consistent behaviour among applications
+   - Limiting the access to other database objects (e.g. tables or 
+     Oracle packages)
+
+--------------------------------------------------------------------------- 
+Q. What is the advantage of database packages to procedures in Oracle 7?
+A. 
+   - Packages allow bundling of functions and procedures for a common 
+     functionality
+   - Packages allow information hiding (functions that are not visible 
+     to the outside)
+   - The whole package is loaded into memory therefore subsequent calls
+     of functions/procedures of this package might be faster
+   
+--------------------------------------------------------------------------- 
+Q. What is the main difference between database triggers and procedures 
+   in Oracle?
+A. 
+    - Triggers are event driven, procedures are executed by program code
+    - 7: Procedures are stored in a parsed format. Triggers are not
+
+--------------------------------------------------------------------------- 
+Q. What function does Oracle's Optimizer perform?
+A. 
+    Determines how data will be accessed
+
+--------------------------------------------------------------------------- 
+Q. What is a rowid?
+A. 
+     Physical address of a row
+
+--------------------------------------------------------------------------- 
+Q. Process involved in Multi Threaded Server 
+A. 
+    - listener process
+
+    - client process
+    - dispatcher process
+    - request queue
+    - response queue
+    - shared server process
+
+    1. The client connects to the listener with the network address. 
+    2. The listener receives the connect request.
+    3. The listener redirectes the message to the least used dispatcher.
+    4. The client dissolves the network session to the listener and 
+       establishes a network session to the shared server.
+    5. The dispatcher updates the listener with the new load value 
+       because of the presence of the new network session. This allows 
+       the listener to balance the incoming network session requests.
+    6. The listener resumes listening for incoming network sessions.
+
+--------------------------------------------------------------------------- 
+| Q. What is a freelist?
+| A. 
+|     A freelist links (points to) all data blocks below the high
+|     water mark that are marked for reuse (empty but used).
+|  
+--------------------------------------------------------------------------- 
+Q. How do you transfer a table from one schema to another?
+A. 
+    - create table ... as select
+    - copy command
+    - exp/imp (with fromuser touser)
+
+--------------------------------------------------------------------------- 
+Q. How can you restore a rollback segment to it's optimal size?
+A. 
+    alter tablespace ... shrink
+
+--------------------------------------------------------------------------- 
+Q. Name PL/SQL packages provided by Oracle.
+A. 
+    dbms_shared_pool         statspack
+    dbms_utility             dbms_metadata
+    dbms_sql
+    dbms_ddl
+    dbms_session
+    dbms_output
+    dbms_snapshot
+
+--------------------------------------------------------------------------- 
+Q. What is the best way to disable and re-enable a primary key?
+A. 
+    - Get the sizing information for the primary key index.
+    - Disable the primary key using the alter table command.
+        SQL> alter table <tab> disable constraint <con>;
+    - Create the unique index for the primary key (with sizing and
+      tablespace information).
+    - Enable the primary key.
+
+--------------------------------------------------------------------------- 
+Q. What happens if the primary key is enabled without specifying the 
+   index clause?
+A. 
+    The index is created in the users default tablespace and all sizing
+    information is lost. When the constraint was disabled the index wA. 
+    dropped and the information is gone.
+
+--------------------------------------------------------------------------- 
+Q. (On Unix) When should more than one DB writer process be used?
+A. 
+    If the Unix system is not capable of asynchronous IO then up to twice
+    the number of disks used by Oracle number of DB writers should be 
+    used. Else only one DB writer.
+
+--------------------------------------------------------------------------- 
+Q. A user gets the ORA-00942: Table not found error what do you do?
+A. 
+    - grant permissions on table
+    - check if a synonym exists or the full name is specified
+
+--------------------------------------------------------------------------- 
+Q. A developer is trying to create a view, he has the role "developer" (which
+   has the "create view" privilege) granted to him. What is the problem?
+A. 
+    He needs direct grants on all tables used in the view.
+
+--------------------------------------------------------------------------- 
+| Q. Descripe the development phases from the DBA point of view.
+| A. 
+|    - Requirement phase 
+|      - Compile list of user and system requirements
+|    - Design phase
+|      - Logical database design
+|      - Physical database design
+|    - Development phase
+|      - Create development guidelines (e.g. for SQL + PL/SQL coding)
+|      - Build development database
+|      - Put change control procedures in place
+|    - System test phase
+|      - Build system test database
+|      - Plan production system layout (failover, backup,
+|        recovery, sizing, monitoring)
+|    - UAT phase
+|      - Build the UAT database
+|        This system should resemble the production system
+|        as close as possible
+|      - Create monitor scripts
+|    - Production
+|      - Build the production database
+|      - Put backup procedures in place   
+| 
+--------------------------------------------------------------------------- 
+| Q. Under which circumstance would you place an index on columns of
+|    a table?
+| A. 
+|    Factors to consider:
+|      - selectivity of data
+|      - amount of the table data that is commonly retrieved
+|      - table activity (e.g. proportion of updates and selects)
+|      - if you return more than 20% of the data the index will slow
+|        down the query (Oracle will not use it)
+|      - if the table is small it might be better to cache it
+|      - if selectivity is low on an index the index is inefficient
+|      - updates and inserts are slowed down by indexes
+| 
+--------------------------------------------------------------------------- 
+| Q. What checks do you do to insure the database is ok?
+| A. 
+|    - check if the database and listeners are running
+|    - check if you can logon
+|    - check for fragmentation, free space
+|    - check alert log
+|    - check success of backups and batch jobs
+|    - check for invalid objects
+|    - check all tables and indexes are analyzed
+| 
+--------------------------------------------------------------------------- 
+Q. How would you set the storage settings for a large table whose usage are
+   inserts and deletes with no updates?
+A. 
+    Large tables require efficient storage. Updates could result in 
+    chaining. If they are not common set pctfree = 5 and pctused = 60.
+
+--------------------------------------------------------------------------- 
+| Q. Describe RAID 0+1 and RAID 5.
+| A. 
+|     RAID 0+1 : Striped and mirrored. Should normally give the highest
+|                troughput. Needs twice the space needed for database.
+| 
+|     RAID 5 : Interleaved parity. Total redundancy, it should be possible to
+|              replace a disk in the array, whilst the system is running.
+|              Writes are slow (always writes to at least 2 locations). Redo 
+|              logs should never be placed on RAID 5.
+| 
+--------------------------------------------------------------------------- 
+Q. How do you upgrade a database to a new Oracle version?
+A. 
+    - Database Upgrade Assistant (dbua). 
+    - Run the upgrade scripts manually.
+    - Use export and import, if the database is not too big.
+
+--------------------------------------------------------------------------- 
+Q. You delete all records of a big table, then you do a select count(*) on
+   the table. The select takes some minutes and finally comes back with the
+   result of 0 rows. Why?
+A. 
+    Delete doesn't reset the high water mark. Select count(*) counts all
+    records below the high water mark. Truncate the table to reset the hight
+    water mark.
+
+--------------------------------------------------------------------------- 
+| Q. Give two examples of how you might determine the structure of a table.
+| A. 
+|     Use the describe command or use the dbms_metadata.get_ddl package.
+| 
+--------------------------------------------------------------------------- 
+| Q. How would you determine who has added a row to a table? 
+| A. 
+|     Turn on fine grain auditing for the table.
+| 
+--------------------------------------------------------------------------- 
+| Q. What is a mutating table error and how can you get around it?
+| A. 
+|     This happens with triggers. It occurs because the trigger is trying to
+|     update a row it is currently using. 
+|     The usual fix involves either use of views or temporary tables so the
+|     database is selecting from one while updating the other.
+| 
+--------------------------------------------------------------------------- 
+Q. What is a correlated subquery?
+A. 
+    A query with a subquery where every row of the subquery relates back
+    to the master query.
+
+--------------------------------------------------------------------------- 
+Q. When should you perform a rebuild?
+A. 
+ 
+- Index has a lot of unoccupied space (deleted leaf blocks that are not
+  refilled). This is not normally a problem because they get ususlly refilled.
+  ==> Happens if you have deletions without inserts or not enough inserts.
+    - Analyze index <name> validate structure.
+    - Select dba_indexes 
+        ==> Compare the sum of length of leaf rows to the deleted leaf rows.
+            If there are too much deleted, rebuild the index.
+- Unusable indexes.
+    - Select dba_indexes.
+--------------------------------------------------------------------------- 
+Q. If a tablespace has a default pctincrease of zero what will this cause 
+   (in relationship to the smon process)?
+A. 
+    Smon will NOT automatically coalesce free space for that tablespace if
+    pctincrease=0
+--------------------------------------------------------------------------- 
+Q. You log on to a database host and you get no response. Things don't
+   work. What do you do.
+A. 
+   Check space. If /app is full the database, CRS etc. won't work.
+--------------------------------------------------------------------------- 
+
+
+xxx
+===============
+ CONFIGURATION
+===============
+
+--------------------------------------------------------------------------- 
+Q. What is the main different of configuring Oracle on NT to UNIX?
+A. 
+    On NT you need to create a service using the oradim utility:
+
+    DOS> oradim -new -sid DAMP -startmode manual -intpwd oracle 
+         -pfile D:\oracle\ora81\database\initDAMP.ora
+    DOS> oradim -edit -sid DAMP -startmode auto
+
+    Note: The oradim command is run twice as a work-around for the oradim
+          related bug affecting automatic startup of the database.
+
+    The above commands will create the following:
+        - OracleServiceDAMP service
+        - PwdDAMP.ora in %ORACLE_HOME%\database
+
+--------------------------------------------------------------------------- 
+Q. How would you make an Oracle PL/SQL procedure run automatically?
+A. 
+   - Cron tab entry and shell script that calls the procedure
+   - Oracle jobs
+   - 3rd party scheduling tool, e.g. tool that can control different types
+     of servers (Mainframe, Unix, Windows, ...).
+
+--------------------------------------------------------------------------- 
+Q. How would you remove a coloumn from a table?
+A. 
+   - Copy the table without the column. Drop the old table. Rename
+     the new table to the old name.
+   - 8i: Use the alter table .. drop column command.
+
+--------------------------------------------------------------------------- 
+Q. What files need to be configured for SQL*Net or NET8 to function?
+A. 
+   - listener.ora
+   - tnsnames.ora (if local naming is used)
+
+--------------------------------------------------------------------------- 
+Q. What happens when the Oracle Names Server database is lost?
+A. 
+    Not much, Oracle Names Servers cache information. The database is 
+    used only to refresh the cache. Each Names Server will
+    periodically poll the region database for updated information.
+
+--------------------------------------------------------------------------- 
+Q. What value is assigned to PCTINCREASE for rollback segments?
+A. 
+    0 (zero)
+
+--------------------------------------------------------------------------- 
+| Q. If a database has been created with a db_block_size of 4K how could 
+|    this be changed?
+| A. 
+|     - Can only be done by re-creating the database. 
+|     - 9i: You can use more than one block size in the database.
+| 
+--------------------------------------------------------------------------- 
+Q. What are control files?
+A. 
+    Contains names of files in the database
+
+--------------------------------------------------------------------------- 
+Q. How many control files would you have on a multi-disk system?
+A. 
+    Two or more, but on different disks
+
+--------------------------------------------------------------------------- 
+Q. What is the DB_BLOCK_BUFFER parameter used for?
+A. 
+    Calculate the size of data buffers in the SGA
+
+--------------------------------------------------------------------------- 
+Q. How would you distribute database files over 4 disks?
+A. 
+    disk a = tables
+    disk b = indexes
+    disk c = undo, temp
+    disk d = redo
+
+--------------------------------------------------------------------------- 
+Q. How would you distribute database files a big RAID10 stripe plus
+   additional mirrored disks?
+A. 
+    raid 10 array   = tables, indexes
+    mirrored disk a = redo       - redo's alternate between disk a and b
+    mirrored disk b = redo
+    mirrored disk c = undo
+    mirrored disk d = temp
+    mirrored disk e = archive
+
+--------------------------------------------------------------------------- 
+Q. How does SGA and PGA change when using Shared Server (known as MTS)?
+A. 
+    When using shared servers, data is moved from the PGA into the SGA. 
+
+    Memory Area                           Dedicated Server  Shared Server 
+    ------------------------------------- ----------------- --------------
+    Nature of session memory              Private           Shared
+    Persistent area                       PGA               SGA
+    Runtime area for SELECT statements    PGA               SGA
+    Runtime area for DML/DDL statements   PGA               SGA
+        
+--------------------------------------------------------------------------- 
+
+xxx
+===================
+ BACKUP & RECOVERY
+===================
+
+--------------------------------------------------------------------------- 
+Q. What is a fractured block?
+A. 
+   A fractured block is a block whose head != tail.
+   This happens because the OS blocksize is smaller then the database
+   blocksize and while we are backing up a file we might read the HEAD of
+   the block (say the first 4k of 8k) -- get interrupted -- the database
+   DBWR rewrites the block -- we get runable again and finish reading the
+   last 4k of another block.
+--------------------------------------------------------------------------- 
+| Q. In what state is a database after recovery?
+| A. 
+|     mount
+| 
+--------------------------------------------------------------------------- 
+| Q. After recovery when do you use OPEN RESETLOGS and when NORESETLOGS?
+| A. 
+|     RESETLOGS
+|         - Incomplete media recovery (e.g. previous time or SCN).
+|         - If you used a BACKUP OF THE CONTROL file in recovery, regardless
+|           of whether you performed complete or incomplete recovery. 
+| 
+|         Examples:
+|         - Renaming the database (uses a backup controlfile).
+|         - Loss of online redo logs (it's an incomplete recovery to previous
+|           time or SCN).
+| 
+|     NORESETLOGS
+|         - Complete media recovery.
+| 
+--------------------------------------------------------------------------- 
+| Q. Recover from loss of a datafile?
+| A. 
+|     Restore backup and recover database using the archive log files
+|
+|     1. Restore the datafile
+|     2. Recovery depends on type of datafile
+|         SQL> recover datafile          -- for standard datafile
+|         SQL> recover database          -- for system datafile
+|     3. Open database
+|
+--------------------------------------------------------------------------- 
+| Q. Recover from loss of a datafile with no backup for it?
+| A. 
+|     Create an empty datafile and apply the archive logs.
+| 
+|     1. Take the tablespace offline.
+|     2. Recreate the datafile.
+|     3. Restore all required archive log files.
+|     4. Recover the datafile.
+|     5. Take the tablespace online.
+|
+--------------------------------------------------------------------------- 
+| Q. Recover from corrupted redo logs?
+| A. 
+|     1. Add a new redo log group.
+|     2. Drop the corrupted redo log group.
+|
+--------------------------------------------------------------------------- 
+| Q. Recover from loss of all online redo logs?
+| A. 
+|     1. Restore the backup.
+|     2. Recover until the end of the last archived log file, 
+|        e.g. "until cancel".
+| 
+--------------------------------------------------------------------------- 
+| Q. Recover from loss of the undo tablespace?
+| A. 
+|     1. Create a new undo tablespace (e.g. undo2)
+|     2. Set the undo tablespace to the newly created ts:
+|         SQL> alter system set undo_tablespace=undo2;
+|     3. Drop the original undo tablespace
+|
+--------------------------------------------------------------------------- 
+| Q. Recover from loss of all control files?
+| A. 
+|     Restore the backed up control file or use a create control file script.
+|
+|     1. Restore binary backup of control file.
+|         OR
+|        Recreate the control file using a ccf script.
+|     2. Recover database using backup control file.
+|     3. Open database with resetlogs option.
+|
+--------------------------------------------------------------------------- 
+| Q. Recover from a fractured block?
+| A. 
+|     Similar recover from loss of datafile with no backup for it.
+|
+|     1. Get the file name from the alert.log error message.
+|     2. Shut down the database.
+|     3. Rename the corrupted file.                       
+|     4. Startup mount with the same controlfile that you are using now.               
+|     5. Create the file again, with the same name and path. 
+|     6. Recover database;
+|
+--------------------------------------------------------------------------- 
+Q. Name 2 ways to backup an Oracle database.
+A. 
+    - Cold or off-line backup
+    - Hot or on-line backup
+    - Exports
+    - Backups using RMA. 
+    - Image backup
+    - User written
+
+--------------------------------------------------------------------------- 
+Q. Which files would you backup in a Hot backup?
+A. 
+    - all data files
+    - all archived redo log files
+    - one control file
+
+    - but NOT the online redo log files
+
+--------------------------------------------------------------------------- 
+| Q. How would you write a Hot Backup script (in which order do you
+|    backup the files)?
+| A. 
+|    - Create a list of the files by selecting from dictionary views.
+|    
+|    - Put the tablespace in backup mode
+|    - Backup all datafiles of the tablespace
+|    - Put the tablespace back in normal mode
+| 
+|    - Switch log files
+|    - Backup all archived redo log files
+|    - Delete the backed up archived redo log files
+| 
+|    - Backup a control file and a backup controlfile to trace script
+|    - Backup the init.ora and the password file
+| 
+--------------------------------------------------------------------------- 
+Q. If you have to advise a backup strategy for a new application, 
+   how would you approach it and what questions will you ask? 
+A.  
+    - What kind of applications is it?
+    - Does it need 24x7 uptime? If yes, use online backups.
+    - How big is the database? Consider incremental backups or BCVs
+      if neccessary.
+    - How frequently does the data change?
+    - What is an acceptable meantime to recover?
+    - Consider a standby database.
+    - If a Veritas cluster is used, you can do a BCV split (split of the
+      mirroed disks) to make an image backup of the data files.
+    - What retention period is needed for the backups?
+    - What is the time interval (window) in which the cold backup can run?
+
+--------------------------------------------------------------------------- 
+Q. How do you ensure disaster recovery?
+A. 
+   - Advanced Replication
+       - Changed data automatically replicated to one or more sites 
+       - Potential data loss is seconds to minutes (based on 
+         replication rate)
+       - Replication configurable from rows and columns to entire 
+         database 
+       - Tradeoffs between system load and replication rate
+       - Replicated data can be configured as read-only or read-write
+
+   - Managed Standby Database (loss of online redo log files)
+       - Log files automatically transferred and applied to one or more 
+         sites 
+       - Potential data loss is minutes to hours (up to two log files)
+       - Protects entire database
+       - Minimal additional system loA. 
+       - Standby database available for read-only processing
+
+   - Cluster failover with mirrored disks
+       - both nodes (servers) in the cluster are connected to both sets 
+         of mirrored disks
+       - primary node is working and accesses the database the secondary 
+         node on the other cluster is idle
+       - failover mounts the disks to the secondary node and starts up
+         the database on the secondary node
+
+   - RAC (or Parallel Server)
+       - 2 servers with a seperate instance share the same data files
+         both servers are used at the same time
+       - if one server goes down, the other can still access the datA. 
+         files (database)
+       - each instance (on each node) has its own rollback segments,
+         create rollback tablespace (RBS_sid) for the instances
+       - it is I/O intensive because data must be written to disk so 
+         that the other instance can read it
+
+--------------------------------------------------------------------------- 
+Q. Roll forward & Roll Backward during DB recovery?
+A.  
+    - Roll forward transactions using the redo logs.
+      (cache recovery)
+    - Roll backward uncommitted changes using the rollback segments.
+      (transaction recovery)
+
+--------------------------------------------------------------------------- 
+Q. How to set Archive log mode ?
+A.  
+    - Shut down the database instance.
+    - Back up the database. 
+    - Start a new instance and mount it.
+    - set the archive log parameters in the init.ora
+
+         log_checkpoint_interval = 104857632
+         log_checkpoint_timeout  = 3600
+         log_archive_start       = TRUE
+         log_archive_dest        = /NODE/oradata/ORACLE_SID/arch
+         log_archive_format      = "log_%t_%s.arc"
+
+    - Switch the database's archiving mode and start the archiving.
+
+         ALTER DATABASE ARCHIVELOG;
+         ALTER SYSTEM ARCHIVE LOG START;
+
+--------------------------------------------------------------------------- 
+Q. Why use mirrored redo logs in Oracle 7?
+
+A. Safeguard against failure of current redo log file
+
+--------------------------------------------------------------------------- 
+Q. What is the difference between these two commands?
+    1. alter system archive log current;
+    2. alter system switch logfile;
+A. 
+   1. Archives the current and all other log files that are not jet archived.
+   2. Switches the log file to write to a new one. The old log file is not
+      neccesarly archived immediately. 
+
+--------------------------------------------------------------------------- 
+Q. In Oracle, rman uses its own processes, not OS processes.
+   What are the advantages by using its own process?
+A. 
+   Tablespaces do not need to be in hotbackup mode, resulting in less redo
+   generation during hot backup.
+   Rman can be throttled (limited in the amount of IO it does) so as to
+   not kill the system with massive read requests
+
+--------------------------------------------------------------------------- 
+Q. All of the control files are corrupted. What do you do?
+A. 
+   Use a controlfile backup or use a create controlfile script (backup
+   controlfile to trace).
+
+   1. Using a controlfile backup:
+
+        1. CONNECT INTERNA. 
+        2. STARTUP MOUNT
+        3. Take any read-only tablespaces offline before next step 
+           (ALTER DATABASE DATAFILE .... OFFLINE;)
+        4. RECOVER DATABASE USING BACKUP CONTROLFILE until cancel
+        5. ALTER DATABASE OPEN RESETLOGS;
+        6. Bring read-only tablespaces back online.
+
+        Shutdown and backup the system, then restart
+
+   2. Using a create controlfile script (recent output file from the 
+      ALTER DATABASE BACKUP CONTROL FILE TO TRACE; command). 
+      Use this if no control file backup is available.
+
+        1. CONNECT INTERNA. 
+        2. STARTUP NOMOUNT
+        3. CREATE CONTROL FILE .....;
+        4. RECOVER DATABASE USING BACKUP CONTROLFILE until cancel
+        5. ALTER DATABASE OPEN RESETLOGS;
+
+   3. Create the create control file script manual.
+
+        You will need to know all of the datafiles, logfiles, and settings
+        for MAXLOGFILES, MAXLOGMEMBERS, MAXLOGHISTORY, MAXDATAFILES for the
+        database to use the command.
+
+--------------------------------------------------------------------------- 
+
+
+xxx
+======
+ RMAN 
+======
+
+--------------------------------------------------------------------------- 
+Q. How do you create the RMAN catalog?
+A. 
+    SQL> create user rman identified by rmA. 
+            temporary tablespace temp
+            default tablespace rcvcA. 
+            quota unlimited on rcvcat;
+
+    SQL> grant recovery_catalog_owner to rman;
+
+    SQL> @$ORACLE_HOME/rdbms/admin/catrman       -- Oracle8
+
+    RMAN> create catalog tablespace "RCVCAT";    -- Oracle8i
+
+--------------------------------------------------------------------------- 
+Q. How do you connect to the RMAN catalog?
+A. 
+    To connect:
+      $ rman target / rcvcat rman/rman@rmA. 
+
+    To run a script:
+      $ rman target / rcvcat rman/rman@rman backup_db.rmn
+
+--------------------------------------------------------------------------- 
+Q. How to backup a database using RMAN?
+A. 
+    To backup to tape: 
+
+    run {
+        allocate channel t1 type 'SBT_TAPE';
+        backup format 'df_t%t_s%s_p%p' (database);
+        backup filesperset 40 format "v80arch.%s.%p" (archivelog all);
+        release channel t1;
+    }
+
+--------------------------------------------------------------------------- 
+Q. How do you recover a database using RMAN?
+A. 
+    - For a full database recovery:
+
+    shutdown abort;
+    startup mount;
+
+    run {
+        allocate channel t1 type 'SBT_TAPE';
+        restore database;
+        recover database;
+        sql 'alter database open';
+    }
+
+    - For a incomplete database recovery:
+
+    run {
+        ### Choose the type of incomplete recovery and
+        ### change value as needed.
+
+        set until time "TO_DATE('01/14/2002 12:02:14','DD/MM/YYYY HH24:MI:SS')";
+        # set until logseq 379 thread 1;
+        # set until SCN 10000;
+
+        shutdown immediate;
+        startup mount;
+
+        allocate channel t1 type 'SBT_TAPE';
+        restore database;
+        recover database;
+        sql 'alter database open resetlogs';
+
+        ### If you RESETLOGS, then you must RESET DATABASE in RMAN catalog
+        ### and then do a full backup!
+    }
+
+--------------------------------------------------------------------------- 
+Q. What views to you check to get info about the backups with RMAN?
+A. 
+    rc_archived_log
+    rc_backup_controlfile
+    rc_database
+    rc_datafile
+    rc_backup_set
+    rc_backup_datafile
+    rc_stored_script
+    ...
+
+--------------------------------------------------------------------------- 
+| Q. How do you clone a database with RMAN?
+| A. 
+|    You can run the DUPLICATE command with or without a recovery catalog.
+|    If you don't have the recovery catalog you use a control file.
+|    After some prepartion steps the RMAN command may look like this:
+| 
+|     RMAN> CONNECT TARGET system/system@R920.ca.oracle.com;
+|     RMAN> CONNECT CATALOG rman/rman@T920.ca.oracle.com;
+|     RMAN> CONNECT AUXILIARY SYS/oracle;
+|
+    RMAN> CONFIGURE CHANNEL DEVICE TYPE disk CLEAR;
+    RMAN> CONFIGURE DEFAULT DEVICE TYPE TO disk;
+    RMAN> CONFIGURE DEVICE TYPE disk PARALLELISM 3; 
+
+    # note that a RUN command is necessary because you can only execute 
+    # SET NEWNAME within a RUN command
+    # instead of "set newname" you could set db_file_name_convert and 
+    # log_file_name_convert in init.ora.
+
+    RMAN> RUN
+    {
+    # the DUPLICATE command uses an automatic disk channel
+
+    set until time "to_date('Jan 29 2003 10:50:00','Mon DD YYYY HH24:MI:SS')";
+
+    SET NEWNAME FOR DATAFILE 1 TO '/export/home/oracle/AUX/system01.dbf';
+    SET NEWNAME FOR DATAFILE 2 TO '/export/home/oracle/AUX/undotbs01.dbf';
+    SET NEWNAME FOR DATAFILE 3 TO '/export/home/oracle/AUX/example01.dbf';
+    SET NEWNAME FOR DATAFILE 5 TO '/export/home/oracle/AUX/tools01.dbf';
+    SET NEWNAME FOR DATAFILE 6 TO '/export/home/oracle/AUX/users01.dbf';
+    SET NEWNAME FOR DATAFILE 7 TO '/export/home/oracle/AUX/logmnrts.dbf';
+    SET NEWNAME FOR DATAFILE 8 TO '/export/home/oracle/AUX/marius01.dbf';
+|
+|     DUPLICATE TARGET DATABASE TO AUX
+|     SKIP TABLESPACE indx
+|     LOGFILE
+|     GROUP 1 ('/export/home/oracle/AUX/redo01a.log',
+|              '/export/home/oracle/AUX/redo01b.log') SIZE 200K REUSE,
+|     GROUP 2 ('/export/home/oracle/AUX/redo02a.log',
+|              '/export/home/oracle/AUX/redo02b.log') SIZE 200K REUSE;
+|     } 
+|
+--------------------------------------------------------------------------- 
+Q. How do you use stored scripts in RMAN?
+A. 
+    E.g.:
+
+    RMAN> create script full_backup1 {
+              allocate channel c1 name "sbt_tape";
+              backup full filesperset 4
+                  (database format "db1.full.%s.%p");
+              release channel c1;
+          }
+
+    RMAN> run { execute script "full_backup1"; }
+
+--------------------------------------------------------------------------- 
+Q. How do I unregister a database from RMAN?
+A. 
+    - Connect to rmA. 
+        % rman TARGET / CATALOG rman/cat@catdb
+    - Run DELETE statements to delete all existing physical backups
+        rman> DELETE BACKUP DEVICE TYPE sbt;
+        rman> DELETE BACKUP DEVICE TYPE DISK;
+    - Unregister the database
+        rman> EXECUTE dbms_rcvcat.unregisterdatabase(db_key, db_id)
+
+--------------------------------------------------------------------------- 
+
+
+xxx
+==================
+ TROUBLE SHOOTING
+==================
+
+--------------------------------------------------------------------------- 
+| Q. How do I check for database (datafile) corruption?
+| A. 
+|     You cA. 
+|     - Use the dbverify utility against all datafiles
+|         $ dbv file='/oradata/mala/users01.dbf' blocksize=4096 
+|     - Make a full export of the database
+| 
+--------------------------------------------------------------------------- 
+| Q. What are causes of the database to hang (or user thinks it hangs,
+|    e.g. hanging logon session)?
+| A. 
+|    - Archive log destination is full
+|    - Tables or indexes are unable to extent in a tablespace
+|      (session hangs if auditing is used and aud$ cannot extend)
+|    - User session is waiting for a lock
+|    - Database is in recovery mode or not open.
+| 
+--------------------------------------------------------------------------- 
+Q. What is the ORA-01555 "snapshot too old" problem?
+A. 
+    This is caused by large or long running transactions that have either
+    wrapped onto their own rollback space or have had another transaction
+    write on part of their rollback space. This can be prevented or 
+    mitigated by breaking the transaction into a set of smaller 
+    transactions or increasing the size of the rollback segments and 
+    their extents.
+
+--------------------------------------------------------------------------- 
+| Q. If users complain that the system is running slowly what actions
+|    would you take?
+| A. 
+|    - Check if a Oracle or Unix process uses all resources and kill it
+|    - Check the SQL statements
+|    - Check the SGA
+|    - Buffer cache, log buffer
+|    - Check the disk I/O
+| 
+|    - For checks use 
+|         - Unix tools: vmstat, sar, top, ...
+|         - Dictionary views: v$session, v$process, v$sql_area, ...
+| 
+--------------------------------------------------------------------------- 
+| Q. If a customer calls you about a hanging database session, 
+|    what will you do to resolve it? 
+| A. 
+|     * Check if the session is waiting for a lock.
+|       - If yes, depending on the process that holds the lock
+|           - Ask the user of the other session to commit
+|           - Wait until process with lock finishes
+|           - kill the session that holds the lock
+|           - kill the session that is waiting for the lock
+|     * Check if the archive log destination is full
+|     * Check if a table or index is unable to create an extent
+| 
+--------------------------------------------------------------------------- 
+| Q. If a database on a Unix system failed to start and the error message 
+|    was something like ‘Failed to get semaphore’ what might the problem 
+|    be?
+| A. 
+|     Semaphore values in file /etc/system must be changed
+| 
+--------------------------------------------------------------------------- 
+Q. How could you defragment a database?
+A. 
+    - Use Export/Import
+    - Use SQL
+    - Use 3GL
+
+--------------------------------------------------------------------------- 
+
+xxx
+===================
+ High Availability
+===================
+
+Data Guard
+==========
+
+--------------------------------------------------------------------------- 
+Q. How do you create a standby database?
+A. 
+    - Connect to primary db and create a standby control file.
+        alter database create standby control file '../../../standby.ctl';
+    - Clone the primary db to the standby location.
+    - Start the standby database.
+        startup nomount
+        alter database mount standby database;
+--------------------------------------------------------------------------- 
+Q. How do you fail over a standby database?
+A. 
+    On orig primary db:
+|    - Initialize the switchover operation (on primary db).
+|        alter database commit to switchover to physical standby ...
+|    - Shutdown and restart the primary db.
+|        shutdown normA. 
+|        startup nomount
+|        alter database mount standby database;
+    
+    On orig standby db:
+|    - Switch the standby role to primary role:
+|        alter database commit to switchover to primary ...
+    - Shutdown and restart the new primary db:
+        shutdown
+        startup
+
+    On the new standby db:
+    - Start the managed recovery operations:
+        alter database recover managed standby database ...
+-------------------------------------------------------------------------- 
+
+
+
+RAC (Real Application Cluster)
+==============================
+
+--------------------------------------------------------------------------- 
+Q. Which views do you use to check performance on a RAC system.
+A. 
+    Check the GV$ views.
+
+--------------------------------------------------------------------------- 
+| Q. What column differentiates the V$ and the GV$ views?
+| A. 
+|     INST_ID, which identifies the instance in a RAC environment.
+| 
+--------------------------------------------------------------------------- 
+| Q. How do you start/stop a database in a RAC environment?
+| A. 
+
+    Starting the Oracle RAC 9i Environment 
+
+    1. Start the GSD (Global Services Daemon).
+    2. Start up the Oracle instance (and related services).
+
+        $ gsdctl start
+        $ srvctl start instance -d orcl -i orcl1
+
+    Stopping the Oracle RAC 9i Environment 
+
+    1. Stop up the Oracle instance (and related services).
+    2. Stop the GSD (Global Services Daemon).
+
+        $ srvctl stop instance -d orcl -i orcl1
+        $ gsdctl stop
+
+
+    Starting the Oracle RAC 10g Environment 
+
+    1. Start the node applications (Virtual IP, GSD, TNS Listener, and ONS).
+    2. Bring up the ASM instance. 
+    3. Start up the Oracle instance (and related services).
+    4. Start the Enterprise Manager Database console. 
+
+        $ export ORACLE_SID=orcl1
+        $ srvctl start nodeapps -n linux1
+        $ srvctl start asm -n linux1
+        $ srvctl start instance -d orcl -i orcl1
+        $ emctl start dbconsole
+
+    Stopping the Oracle RAC 10g Environment 
+
+    1. Stop the Enterprise Manager Database console. 
+    2. Stop the Oracle instance.
+    3. Bring down the ASM instance. 
+    4. Shut down the node applications (Virtual IP, GSD, TNS Listener, and
+       ONS). 
+
+        $ export ORACLE_SID=orcl1
+        $ emctl stop dbconsole
+        $ srvctl stop instance -d orcl -i orcl1
+        $ srvctl stop asm -n linux1
+        $ srvctl stop nodeapps -n linux1
+
+
+
+    Start/stop all the instances and their enabled services (10g).
+
+    $ srvctl start database -d orcl
+
+    $ srvctl stop database -d orcl
+
+--------------------------------------------------------------------------- 
+Q. What is a past immage of a block?
+A. 
+   RAC cache fusion: 
+   Past images are older copies of a buffer that have not yet been written
+   to disk.
+
+   If a lock is acquired and already has dirty buffers on a remote instance
+   then it takes on a global lock role and any remote instances thA. 
+   contain these dirty buffers will have what is called a 'past image' of
+   the buffer.
+
+--------------------------------------------------------------------------- 
+Q. What files are shared on a RAC system?
+A. 
+    Common/shared files
+      - data files
+      - control files
+
+    Instance specific files
+      - redo log files 
+          On shared storage to help recovery operations.
+      - archive log files
+          On shared or local storage (better on shared).
+      - undo tablespace
+      - alert.log and trace files
+
+    Special cases
+      - spfile
+          RAC systems can have a single shared spfile when using a symbolic
+          link in $ORACLE_HOME/dbs pointing to the shared file.
+
+--------------------------------------------------------------------------- 
+Q. What is Cache Fusion?
+A. 
+    Cache Fusion provides cache-to-cache transfer of data blocks between
+    instances in a cluster.
+
+--------------------------------------------------------------------------- 
+Q. What is different for an ASM instance?
+A. 
+    SID: +ASM
+    Processes: asm_<proc>_<SID>  (e.g. asm_pmon_+ASM1)
+
+--------------------------------------------------------------------------- 
+Q. What extra checks do you have to do when patching a RAC database?
+A. 
+    Make sure that the oracle binary on all nodes is of the same size.
+    Otherwise you will get errors in the alert.log.
+
+--------------------------------------------------------------------------- 
+Q. What are the advantages of ASM?
+A. 
+    - Spreads I/O evenly across all disks by moving extents.
+    - Automatically rebalances extents when disks are added.
+    - Disks can be added without interrupting the database.
+    - ASM can be used to mirror data files.
+
+--------------------------------------------------------------------------- 
+Q. What stripe types does ASM has?
+A. 
+    - Fine: uses 128K chunks accross groups of 8 allocation units
+    - Coarse: spreads files acrross 1 allocation unit chunks (>= 1 file extend)
+
+--------------------------------------------------------------------------- 
+Q. What IP addresses has 10g RAC and what are they for?
+
+    - Public IP (physical IP address)
+    - Private IP (for interconnect)
+    - Virtual IP 
+        New in 10g. This is for connections. The virtual IP addresses are 
+        used to avoid timeouts when a node is down. The virtual IP is marked
+        as "down" and connections move on to the next node immidately (no
+        waits for timeouts).
+--------------------------------------------------------------------------- 
+Q. What happens if you create a datafile on a file system that is only
+   visible to one node (ocfs)?
+
+    - Most things will still work (e.g. transactions that don't need to 
+      access the unvisible data file).
+    - You will get an error for transactions that try to access the
+      unvisible data file.
+--------------------------------------------------------------------------- 
+
+
+
+Active/passive node clusters
+============================
+
+--------------------------------------------------------------------------- 
+Q. What to I have to do when I want to shut down the database on a cluster?
+A. 
+   Freeze the service group of the database before you shut it down. 
+   If you fail to do so the database will fail over.
+
+   OR
+
+   Use veritas cluster commands to shut down the database.
+--------------------------------------------------------------------------- 
+Q. How gets data replicated to DR node?
+A.
+   Use replication software, e.g.:
+
+   - SRDF (Symmetrix Remote Data Facility) 
+     Data replication from one Symmetrix storage array (EMC) to another.
+--------------------------------------------------------------------------- 
+
+
+
+Oracle Streams
+==============
+
+--------------------------------------------------------------------------- 
+Q. What do you do when there is latency?
+A. 
+
+- Check the status of the streams processes.
+    Capture, Propagate and Apply
+- Check if there are any apply errors.
+    select * from dba_apply_error;
+- Fix the errors and restart the apply process.
+
+- Check which streams process (capture, propagate, apply) has a problem.
+    Check the queue length:
+    select ... from gv$buffered_queues ...
+    Depending on which queue grows you know what is broken.
+    E.g.:
+    - Apply queue grows ==> apply does not work
+    - Capture queue grows ==> propagate does not work (and/or apply queue
+        on target database does not work)
+    ==> Check queues on other database to confirm.
+--------------------------------------------------------------------------- 
+Q. How do you check for latency?
+A. 
+
+We had a table with a "site" and "timestamp" column. This table was updated
+every 5 minutes and it's data replicated by streams. Checking this table we
+could see which site had latency.
+--------------------------------------------------------------------------- 
+Q. Do you know other replication products?
+A. 
+
+- GoldenGate Data Synchronization
+- SharePlex Data Replication (Quest)
+--------------------------------------------------------------------------- 
+Q. What are the components of a queue?
+
+- Queue buffer
+- Queue table
+--------------------------------------------------------------------------- 
+Q. What is supplemental logging?
+A. 
+
+Additional information that needs to be added to the log files for streams.
+Process of logging extra columns to the redo log files is called 
+supplemental logging.
+--------------------------------------------------------------------------- 
+Q. What supplemental logging types exist?
+A. 
+
+- Database level logging.
+- Table level logging.
+
+They can have following atribute types:
+    - All (logs all columns of the row)
+    - Primary Key
+    - Unique Index
+    - Foreign Key
+--------------------------------------------------------------------------- 
+Q. What are LCRs?
+A. 
+
+LCR = Logical Change Record
+LCRs are redo changes converted into events (done by capture process).
+
+Types
+    - Row LCR
+    - DDL LCR
+--------------------------------------------------------------------------- 
+Q. What are the streams processes?
+A. 
+
+Capture   = Oracle background process cnnn
+Propagate = Uses job queue processes 
+                - Job queue coordinator process CJQ0
+                - Job queue slave processes Jnnn
+Apply     = Oracle background process Annn
+--------------------------------------------------------------------------- 
+Q. How does object instantiation work?
+A. 
+
+Steps to instantiate an object:
+
+1. Prepare the object for instantiation at source DB.
+2. Make a copy of the object with same rows at the destination DB. Use:
+     - exp/imp
+     - transportable tablespaces
+     - rman
+3. Set the instantiation SCN for the object at the destination DB.
+
+Prepare:
+The lowest SCN is being set for which changes to the object need to be 
+applied to the destination.
+--------------------------------------------------------------------------- 
+Q. What are tags?
+A. 
+
+Streams tags control the behaviour of the client. The default tag value
+for a redo entry is NULL. 
+
+exec dbms_streams.set_tab(tag => hextoraw('A'));
+select dbms_streams.get_tag from dual;
+--------------------------------------------------------------------------- 
+
+
+xxx
+========
+ TUNING
+========
+
+--------------------------------------------------------------------------- 
+Q. What are indications that you need to increase the SHARED_POOL_SIZE?
+A. 
+    - Low library cache hit ratio.
+    - Low data dictionary cache hit ratio.
+    - Increased parsing of SQL statements.
+--------------------------------------------------------------------------- 
+Q. You have just started a new instance with a large SGA on a busy existing
+   server. Performance is terrible, what should you check for?
+A. 
+    Check if there is a lot of swapping on the server.
+--------------------------------------------------------------------------- 
+Q. How can you decrease paging and swapping?
+A. 
+    Decrease the shared_pool_size.
+--------------------------------------------------------------------------- 
+Q. Name top parameters that affect database performance.
+A. 
+
+Oracle 8i
+    1. cursor_sharing = {EXACT | SIMILAR | FORCE}
+    2. db_block_buffers (part of SGA. 
+    3. PGA: 
+        - sort_area_size
+        - hash_area_size
+    4. Rest of SGA. 
+        - shared_pool_size
+        - log_buffer
+        - large_pool_size
+    5. Others:
+        - hash_join_enabled = TRUE
+        - hash_multiblock_io_count
+        - db_file_multiblock_read_count
+
+Oracle 9i
+    1. cursor_sharing = {EXACT | SIMILAR | FORCE}
+    2. db_cache_size
+    3. pga_aggregate_target
+    4. workarea_size_policy = AUTO (not MANUAL!)
+    5. db_16k_cache_size, db_8k_cache_size, ...
+
+Oracle 10g
+    1. cursor_sharing = {EXACT | SIMILAR | FORCE}
+    2. SGA. 
+        - statistics_level = {TYPICAL | ALL} (not BASIC!)
+        - sga_target <> 0
+        - sga_max_size
+    3. pga_aggregate_target
+    4. workarea_size_policy = AUTO (not MANUAL!)
+    5. db_16k_cache_size, db_8k_cache_size, ...
+    6. Others:
+        Like 8i, plus
+        - db_cache_advice = ON
+--------------------------------------------------------------------------- 
+| Q. What do you do when a user tells you the system is slow?
+| A. 
+|    - Ask: What application or SQL are you running when you have slow
+|      performance.
+|    - Ask: Is it only his session/query or the whole system?
+| 
+|    - How many hits has the web site? Is this an increase to before?
+|    - The hits may be logged in a web log file / Oracle table.
+|    - Are unsual things happening?
+|         - New software, marketing campaign, new server, new version, ...
+| 
+|    - Is there an os process spinning?
+|    - How many users are logged on to the database?
+|    - Is a database process using all resources?
+|    - What is the initial bottlenek?
+|         - I/0, memory, latches, ...
+|    - Does the schema need analyzing?
+|    - Does the SQL use indexes?
+| 
+--------------------------------------------------------------------------- 
+Q. What do you do when a user tells you the system is slow?
+A. 
+   - Ask the user: 
+        ~ Is it only his session/query or the whole system?
+        ~ Is this an ongoing problem or is it a current problem that did it
+          occur just now?
+   
+   - Have any system settings changed that caused the problem?
+
+   - Are the tables analyzed?
+        Check dba_tables and dba_indexes (last_analyzed).
+
+|    - Check the system:
+|         Check I/O with
+|             sar 5 5
+|         Check CPU
+|             sar 5 5
+|             top
+|         Check memory usage
+|             top
+
+   - Is an OS process spinning? 
+        Use truss to find out if the process is doing something 
+        (truss -p <pid>).
+
+|     - Check v$ views for the session:
+|         v$session
+|         v$sesstat : memory usage
+|         v$sess_io : io
+|         v$sqlarea : sql
+|         v$transaction, v$rollname, v$session : RBS per session 
+|         v$session_event, v$system_event
+
+|     - Check the SQL used by the user/session:
+|         - Does the SQL use indexes?
+|             explain plan 
+|             tkprof
+
+    - Check alert.log and trace files.
+
+    - Use statspack package to compare good and bad performance. Useful to
+      make detailed inquireies.
+
+    - Check v$ views for the database:
+        v$sysstA. 
+            Buffer Cache Hit ratio
+            Redo NoWait
+            In-Memory Sort
+        v$librarycache
+            Library Cache Hit ratio
+        v$rowcache
+            Data Dictionary Cache Hit ratio
+        v$rollstA. 
+            Rollback Segment NoWait
+        v$latch (latches are low level locks)
+            Avg immediate Latch Miss
+
+--------------------------------------------------------------------------- 
+Q. How do you fix the problem?
+A. 
+    To many I/O waits
+        - Try to spread I/O to serveral disks.
+    To many CPU waits
+    Not enough memory
+
+    Low Data Dictionary Hit Ratio.
+        - Increase shared_pool_size
+    Low Library Cache Hit Ratio.
+        - Increase shared_pool_size
+    Low Buffer Cache Hit Ratio.
+        - Increase db_cache_size (db_block_buffers) in init.orA. 
+    Too many Log Buffer Waits
+        - Increase log_buffer.
+    Too many sorts on disk.
+        - Increase sort_area_size.
+
+    An OS process spinning.
+        - Kill the process.
+--------------------------------------------------------------------------- 
+| Q. How to you check the problems of an SQL session?
+| A. Use:
+|     - Enterprise Manager.
+|     - Other monitoring tool 
+|         (e.g. Spotlight from Quest, CA Unicenter, BMC Patrol)
+|     - sqlplus (use scripts):
+|         - v$session
+|         - v$session_wait
+|         - v$sess_io
+|         - v$sesstA. 
+|         - v$session_event
+--------------------------------------------------------------------------- 
+Q. How do you find out which SQL a session is executing?
+A. Use:
+    - Enterprise Manager.
+    - Other monitoring tool (e.g. from Quest)
+    - sqlplus:
+        - v$sqlarea (1 row per sql string)
+        - v$sql     (1 row per child of sql string)
+        - v$sqltext (complete sql text)
+--------------------------------------------------------------------------- 
+Q. How do I find out if someone is waiting for a lock:
+A. 
+    sqlplus:
+        - v$lock
+        - v$locked_object
+--------------------------------------------------------------------------- 
+| Q. What is a recursive SQL statement?
+| A. 
+|    The data dictionary tables have to be called repeatedly. This is 
+|    because the dictionary cache is too small.  
+| 
+--------------------------------------------------------------------------- 
+| Q. How would you tune a database?
+| A. 
+|    - Increase the buffer pool to hold small tables in cache
+|    - Increase the shared pool to hold SQL statements in cache, to
+|      avoid repeatedly parsing.
+|    - Create tables with increased free list parameter to enable more
+|      simultanious transactions (inserts) on the table.
+|    - Set the parameter db_multi_block_read to 64K if there are many full
+|      table scans.
+| 
+--------------------------------------------------------------------------- 
+Q. How do you use tkprof?
+A. 
+    1. alter session set sql_trace = true;
+    2. Run the application
+    3. alter session set sql_trace = false;
+    4. Format the trace file
+       tkprof <tracefile> <outfile> explain=user/password sys=no
+
+--------------------------------------------------------------------------- 
+| Q. How would you go about tuning a piece of SQL?
+| A. 
+|    - Explain plA. 
+|    - tkprof
+| 
+--------------------------------------------------------------------------- 
+Q. How do you set up tablespaces for a database?
+A. 
+    Separate system, rollback, redo log, data, index and temporary
+    tablespaces.
+
+--------------------------------------------------------------------------- 
+Q. You see multiple fragments in the system tablespace. What do you do?
+A. 
+    Ensure that no user has system as their default or temporary tablespace.
+
+--------------------------------------------------------------------------- 
+Q. What indicates that you have to increase the shared_pool_size?
+A. 
+   - poor dictionary or library cache hit ratios
+   - steadily decreasing performance
+
+--------------------------------------------------------------------------- 
+Q. What size do you use for db_block_size and db_multi_block_read for 
+   a database that does many full table scans?
+A. 
+    64 K because Oracle almost always reads in 64 K chunks.
+
+--------------------------------------------------------------------------- 
+Q. What are stored outlines and what can they be used for?
+A. 
+   - Stored outlines are stored execution plans for SQL statements.
+   - Plans can be maintained through:
+      - new Oracle versions
+      - new statistics on objects
+      - init.ora parameter changes
+      - database reorganization
+      - schema changes
+      - change from cost based to rule based optimizer
+   - Control the execution plan for a third-party application
+   - Tune queries in test system, copy outlines to production.
+
+--------------------------------------------------------------------------- 
+Q. What can stored statistics be used for?
+A. 
+   - Tune query execution plans on a test system with statistics from 
+     production without having the same amount of datA. 
+   - Force Oracle to use a specific execution plan.
+
+--------------------------------------------------------------------------- 
+Q. What performance problems can you get when using partitioning?
+A.  
+    - You can have queries that hit all partitions. Such queries will be
+      slower than the same query on a unpartitioned table.
+    - Using parallel query and partitioning can result in too many
+      processes being spawned, which is bad.
+
+--------------------------------------------------------------------------- 
+Q. What is a reverse key index and what is it used for?
+A. 
+   A reverse key index reverses the bytes of each column indexed (except
+   the rowid) while keeping the column order.
+
+   By reversing the keys of the index, the insertions become distributed
+   across all leaf keys in the index.
+
+   This can help avoid performance degradation with Oracle9i RAC where
+   modifications to the index are concentrated on a small set of leA. 
+   blocks. 
+
+   E.g.:
+    CREATE INDEX i ON t (a,b,c) REVERSE; 
+
+--------------------------------------------------------------------------- 
+| Q. What actions have you done in the past to improve performance?
+| A. 
+| 
+| Tesco: 
+| - init.ora
+|     optimizer_index_cost_adj=20      # for 1 bad query of application
+|     parallel_max_servers=16          # to take advantage of 8 CPUs
+|     log_parallelism=8                # to reduce log contention
+|     parallel_automatic_tuning=true
+|     filesystemio_options=async       # should have been the default on AIX
+|     hash_join_enabled=true
+| - IO tuning
+|     ~ Use cio (concurrent io) to improve IO (works only for writes).
+|     ~ Increase number of HBA (host bus adapters) from 2 to 4 in 
+|       IBM P690 servers.
+|     ~ Increase number of brocade switches (network switches) in 
+|       EMC DMX storage.
+| - Other
+|     ~ Run batch without SRDF replication and resync aferwards.
+|     ~ Run batch load without archvie log mode (backup after load).
+|     ~ Use parallel queries. Increase large_pool_size for parallel queries.
+| 
+| MAN:
+|     ~ cursor_sharing=force (should be a temporary messure)
+|     ~ Ask the developers to rewrite SQL that can use bind variables.
+|
+--------------------------------------------------------------------------- 
+
+xxx
+========
+ Design
+========
+
+--------------------------------------------------------------------------- 
+| Q. Explain the definition of a "star schema." 
+| A. 
+|     A star schema consists of fact tables and dimension tables. 
+| 
+|     Fact table contains data (measurements).
+|     Dimension tables contain data to describe the fact tables.
+| 
+--------------------------------------------------------------------------- 
+| Q. What do you have to do when you go from the logical to the physical data
+|    model?
+| A. 
+|     - Add indexes
+|     - Define tablespaces
+|     - Do the table and index sizing
+|     - Add additional objects needed (e.g. intersection tables for many to 
+|       many relationships)
+| 
+--------------------------------------------------------------------------- 
+Q. Describe the third normal form?
+A. 
+    In third normal form all attributes in an entity are related to the
+    primary key and only to the primary key.
+
+--------------------------------------------------------------------------- 
+Q. Why are recursive relationships bad? How do you resolve them?
+A. 
+    Recursive relationship: Table relates to itself.
+    It is bad when both sides are a must (none is a may) because this mA. 
+    result in not being able to ad a top or bottom record. It is resolved
+    by using an intersection table.
+
+--------------------------------------------------------------------------- 
+Q. How do you hadle many to many relationships?
+A. 
+    Using an intersection table.
+
+--------------------------------------------------------------------------- 
+Q. When should you consider denormalization?
+A. 
+    When better query performance is needed (e.g. in a Data Warehouse).
+
+--------------------------------------------------------------------------- 
+
+
+xxx
+================================
+ OAS (Oracle Appliation Server)
+================================
+
+--------------------------------------------------------------------------- 
+Q. How do you start and stop OAS?
+A. 
+    Use Enterprise Manager or command line tools.
+
+    9iAS 
+        $ sqlplus '/ as sysdba' << startup ...
+        $ lsnrctl start
+
+        $ oidmon start
+        $ oidctl server=oidldapd configset=0 instance=1 start
+        $ dcmctl start -ct ohs -v -d
+        $ dcmctl start -co OC4J_DAS -v -d
+
+        $ webcachectl start                                      # optionA. 
+        $ oemctl start oms                                       # optionA. 
+        $ agentctl start agent                                   # optionA. 
+
+        $ emctl start
+
+    10gAS 
+        $ opmnctl startall                  # start components
+        $ emctl start iasconsole            # Start application serve console
+
+    To stop, run commands in reverse.
+
+--------------------------------------------------------------------------- 
+Q. How do you check that OAS is running?
+A. 
+    Use Enterprise Manager or command line tools.
+
+    9iAS 
+        $ dcmctl getstate -i <instance> -v -d
+        $ ps -ef | grep oid                      # e.g. for checking or oid
+
+    10gAS 
+        $ opmnctl status
+
+--------------------------------------------------------------------------- 
+Q. How can you deploy OC4J applications?
+A. 
+    Use Enterprise Manager or command line tools.
+
+    9iAS and 10gAS 
+        $ dcmctl ... ... ..
+
+--------------------------------------------------------------------------- 
+
+
+xxx
+======
+ Unix
+======
+
+--------------------------------------------------------------------------- 
+| Q. What UNIX command will control the default file permissions when files
+|    are created? 
+| A. 
+|     umask 
+| 
+--------------------------------------------------------------------------- 
+Q. Explain iostat, vmstat and netstat. 
+A. 
+    Iostat: Reports on terminal, disk and tape I/O activity.
+
+    Vmstat: Reports on virtual memory statistics for processes, disk, tape
+            and CPU activity.
+
+    Netstat: Reports on the contents of network data structures.
+
+--------------------------------------------------------------------------- 
+| Q. Give two UNIX kernel parameters that effect an Oracle install 
+| A. 
+|     SHMMAX and SHMMNI
+| 
+--------------------------------------------------------------------------- 
+Q. What command do you use to display and remove the shared memory 
+   segments?
+A.  
+    - to list them:     ipcs
+    - to remove them:   ipcrm
+--------------------------------------------------------------------------- 
+
+xxx
+=====
+ New
+=====
+
+--------------------------------------------------------------------------- 
+Q. 
+A. 
+--------------------------------------------------------------------------- 
+
+
+# vim: tw=75

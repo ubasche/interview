@@ -1,0 +1,149 @@
+
+AWS IAM (Identity and Access Management)
+========================================
+
+What is AWS Security?
+---------------------
+
+- AWS IAM security is cheaper that on-prem.
+
+
+
+
+Types of AWS Security
+---------------------
+
+  - IAM : Identity + Access Management
+      - Manage access to recources
+      - Create groups
+      - Create and control services for authentication or limiting access
+      
+      - You can host Slack in AWS. You can use Slack to share password in a secure way.
+      
+  - KMS : Key Management System 
+  - Cognito : User authentication and access for mobile applications
+  - WAF : Web Access firewall
+
+Elements of IAM
+  1. Principal
+      - A user can be a principal
+      - A role can be a principal
+      - An application can be a principal
+      - A principal is an entity that can take an action on a resource
+  2. Authentication
+      - The process of confirming the identity of the principal
+      - To authenticate from console, API or CLI you must provide your credentials or requested key
+  3. Request
+      - What action do you want to do on which resource.
+  4. Authorization
+      - IAM takes info from the request context to check for matching policies and
+        determines whether to allow or deny the request.
+      - By default all resources are denied. 
+      - IAM only authorizes you request if every part of your request if allowed by a matching policy. 
+      - You need an explicit allow.
+      - Only the area account root user has access to all the resources.
+  5. Actions (what scope of actions can be taken)
+      - Actions can only be taken by a principal.
+      - Action is performed on a resource.
+  6. Resources
+  
+
+Components of IAM
+  - Users
+      - An IAM user is an identity with permissions and credentials attached to it.
+      - An IAM user usually represents a person (e.g. employee).
+      - It doesn't have to represent a person.
+      - You need assign permissions to a user.
+      - A user can have many groups.
+  - Groups
+      - A collection of IAM users is an IAM group.
+      - You can use IAM groups to specify permissions for multible users.
+      - A group can have many users.
+      - A group cannot be nested, i.e. it cannot have groups, it only can have users.
+      - There no group that includes all users. If you want such a group you have to create it.
+  - Policies
+      - A policy sets permissions and controls the access to AWS recources
+      - Policies are stored in AWS as JSON documents.
+      - Permissions specify who can have access to the resources and 
+         what actions they can perform.
+  - Roles
+      - A set of permissions that are allowd and denied by and entity
+      - It is similar to a user.
+      - A role in IAM can be assumed/accessed by any entity (an individual or an AWS service)
+      - Role permissions are temporary.
+      - IAM gives temporary credentials for the access. This credential expire after a set time
+         that can be set by the administrator.
+         ==> The password cannot be compromised.
+
+
+  Policy content example
+    who?                   Paul
+    What actions?          Can get/put objects in S3
+    Which AWS resources?   Bucket="*"
+    When?                  Until March 2, 2019
+    Whether?               Allow
+    
+    
+JSON example 1:    
+{
+  "Version":"2012-10-17",
+  "id": "S3-Account-Permissions"
+  "Statement":[
+    {
+      "Sid":"AddPublicReadPermissions",
+      "Effect":"Allow",
+      "Principal":"*",
+      "Action":"s3:*",
+      "Resource":"arn:aws:s3:::bucket/*",
+    }
+  ]
+}
+
+
+JSON example 2:    
+{
+  "Version":"2012-10-17",
+  "Statement":[
+    {
+      "Sid":"AddCannedAcl",
+      "Effect":"Allow",
+      "Principal": {"AWS": ["arn:aws:iam::111122223333:root","arn:aws:iam::444455556666:root"]},
+      "Action":["s3:PutObject","s3:PutObjectAcl"],
+      "Resource":"arn:aws:s3:::DOC-EXAMPLE-BUCKET/*",
+      "Condition":{"StringEquals":{"s3:x-amz-acl":["public-read"]}}
+    }
+  ]
+}
+
+
+  Policy types
+    - Managed Policies
+        - It is a default policy the you attach to multiple entities (users, groups, roles)
+           in your AWS account.
+        Types
+          - AWS managed policies.
+          - Customer managed policies.
+    - Inline Policies
+        - You create and manage your own policy that is embedded directly into a sigle entity
+           (user, group or role).
+            
+
+Example  32 min
+  Cerate a S3 bucket for a company wher each user can create their own
+  read/write data with multi-factor authentication (additional level, e.g. code to mobile phone).
+  
+  1. Logon to AWS console
+  2. Create a bucket
+  2. Create a folder in the bucket
+  2. Create a user
+  2. Attach policy to user: AmazonS3FullAccess
+  2. Attache MFA
+      -> Go to "Security credentials" -> Assigned MFA device
+        -> [x] Virtual MFA
+        -> [ ] Hardware MFA
+      Virtual MFA is an app, e.g. Google Authenticator
+      You have to scan a barcode which will create 2 codes (you need to wait for the 2nd code)
+      that you have to enter.
+  3. Sync virtual appliance (mobile phone) with AWS
+  
+     Type in MFA code

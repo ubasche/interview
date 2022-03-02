@@ -1,0 +1,636 @@
+
+
+AWS CloudFormation
+==================
+
+What is AWS CloudFormation
+--------------------------
+
+- Uses templating language
+- Enables you to version control your AWS infrastructure
+- Infrastructure as code
+- Has API and SDK wrappers for Python, ...
+- CloudFormatin is free (no cost)
+
+- You can capture region specific variations within the template
+- The templates are JSON text files
+- Declaritive templationg language 
+
+- Execute the template by
+    ~ Management console
+    ~ Command line 
+    ~ AWS API single request
+
+- AWS provides sample templates
+- Has execution time template parameters --> Parameterised templates
+
+
+CloudFormation - Components and Technology
+------------------------------------------
+
+1. Template - JSON formatted file
+    - Parameter definition
+    - Resource creation
+    - Configuration activities
+2. CloudFormation - Framework
+    Executes the JSON template
+    - Stack creation
+    - Stack updates
+    - Error detection and rollback
+3. Stack - Configured AWS services
+    - Comprehensive service support
+    - Service event aware
+    - Consomisable
+    
+Creating Templates
+------------------
+
+High level template structure:
+
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description": "A text describing for the template usage",
+  "Parameters" : {
+    // A set of inputs used to customize the template per deployment
+    },
+  "Resources" : {
+    // A set of AWS resources and relationships between them
+    },
+  "Outputs" : {
+    // A set of AWS values to be made visible to the stack creator
+    }
+}
+
+
+- CloudFormation, being JSON text files, can be created as part of a CI/CD pipeline.
+  E.g. You can use the tool "troposhpere"
+
+
+Creating and Managing Stacks
+----------------------------
+
+AWS -> CloudFormation -> Create New Stack
+  -> Select Template
+    Name: "My stack name"   e.g. "ec2InstanceDemoStack
+    Source:
+      [ ] Select a example template
+        ["Example template name"]
+      [x] Upload a template to Amazon S3
+        ((Browse))
+      [ ] Specify an Amazon S3 template URL
+        "Template URL"    
+    
+  -> Specify Parameters      # template dependent
+    Parameters
+      KeyPair: "Keypair name"
+      
+  -> Options
+    1. Key: "keyname"         Value: "value"
+    2. Key: ....
+    ...
+    
+  -> Review
+
+
+AWS CLI
+-------
+  $ aws cloudformation create-stack help
+
+  $ aws cloudformation create-stack \
+      --stack-name myteststack \
+      --template-body file:///home/testuser/mytemplate.json \
+      --parameters ParameterKey=Parm1,ParameterValue=test1 ParameterKey=Parm2,ParameterValue=test2
+
+  {
+    "StackId" : "arn:aws:cloudformation:us-west-2:123456789012:stack/myteststack/330b0120-1771-11e4-af37-50ba1b98bea6"
+  }
+
+    
+Working with AWS Resources
+--------------------------
+
+-- Create EC2 Volume
+
+{
+  "Type" : "AWS::EC2::Volume",
+  "Properties" : {
+      "AutoEnableIO" : Boolean,
+      "AvailabilityZone" : String,
+      "Encrypted" : Boolean,
+      "Iops" : Integer,
+      "KmsKeyId" : String,
+      "MultiAttachEnabled" : Boolean,
+      "OutpostArn" : String,
+      "Size" : Integer,
+      "SnapshotId" : String,
+      "Tags" : [ Tag, ... ],
+      "Throughput" : Integer,
+      "VolumeType" : String
+    }
+}
+
+
+-- Create Security Group
+
+{
+  "Type" : "AWS::EC2::SecurityGroup",
+  "Properties" : {
+      "GroupDescription" : String,
+      "GroupName" : String,
+      "SecurityGroupEgress" : [ Egress, ... ],
+      "SecurityGroupIngress" : [ Ingress, ... ],
+      "Tags" : [ Tag, ... ],
+      "VpcId" : String
+    }
+}
+
+
+Referencing the properties of other resources
+---------------------------------------------
+
+
+
+AWSTemplateFormatVersion: '2010-09-09'Description: 'Base Stack with static resources'Resources:VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      CidrBlock: 10.0.0.0/16PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock: 10.0.0.0/24InternetGateway:
+    Type: AWS::EC2::InternetGateway
+ 
+  VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: VPC
+      InternetGatewayId:
+        Ref: InternetGateway
+  
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPC
+  
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: VPCGatewayAttachment
+    Properties:
+      RouteTableId:
+        Ref: PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: InternetGateway
+  
+  PublicSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: PublicSubnet
+      RouteTableId:
+        Ref: PublicRouteTable
+  
+  PublicSubnetNetworkAclAssociation:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      SubnetId:
+        Ref: PublicSubnet
+      NetworkAclId:
+        Fn::GetAtt:
+        - VPC
+        - DefaultNetworkAcl
+  
+  WebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable HTTP ingress
+      VpcId:
+        Ref: VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        CidrIp: 0.0.0.0/0
+
+
+-----------------
+
+
+Now, I will create a Application stack that imports the resources from the base stack
+
+AWSTemplateFormatVersion: '2010-09-09'Description: 'Application stack Web server'Parameters:
+  NetworkStackName:
+    Description: Name of the base stack with all infra resources
+    Type: String
+    Default: BaseStackResources:
+  WebServerInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId:
+   - SOMETHING FROM MY REGION
+      NetworkInterfaces:
+      - GroupSet:
+        - Fn::ImportValue:
+            Fn::Sub: "${NetworkStackName}-SecurityGroupID"       <==
+        AssociatePublicIpAddress: 'true'
+        DeviceIndex: '0'
+        DeleteOnTermination: 'true'
+        SubnetId:
+          Fn::ImportValue:
+            Fn::Sub: "${NetworkStackName}-SubnetID"     <==
+      UserData:
+        Fn::Base64:
+          Fn::Join:
+          - ' SOMETHING SOMETHING SOMETHING'
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT5M
+        
+Create an Amazon Elastic Compute Cloud (Amazon EC2) instance using an imported subnet and security group
+
+1.    Open the AWS CloudFormation console.
+
+2.    Choose Create Stack, and then choose Design template.
+
+3.    In the Parameters tab of the code editor, choose Template.
+
+4.    Copy and paste the following template into the code editor, and then update the template with appropriate values for InstanceType and ImageId.
+
+        
+        
+{
+  "Parameters": {
+    "NetworkStackParameter": {
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "WebServerInstance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "InstanceType": "t2.micro",
+        "ImageId": "ami-a1b23456",
+        "NetworkInterfaces": [
+          {
+            "GroupSet": [
+              {
+                "Fn::ImportValue": {
+                  "Fn::Sub": "${NetworkStackParameter}-SecurityGroupID"
+                }
+              }
+            ],
+            "AssociatePublicIpAddress": "true",
+            "DeviceIndex": "0",
+            "DeleteOnTermination": "true",
+            "SubnetId": {
+              "Fn::ImportValue": {
+                "Fn::Sub": "${NetworkStackParameter}-SubnetID"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+
+Important: In the template in step 4, use the NetworkStack resource stack as the value for NetworkStackParameter. The NetworkStack value replaces the correct stack name in the corresponding Fn::ImportValue functions.
+
+Note: For examples of import and export templates, see Fn::ImportValue.
+
+5.    Choose the Create stack icon, and then choose Next.
+
+6.    For Stack name, enter a name for your stack.
+
+7.    For Parameters, enter the network stack name (NetworkStack) that you want to cross-reference.
+
+8.    Choose Next, choose Next again, and then choose Create.
+
+9.    After the stack creation is complete, open the Amazon EC2 console.
+
+10.    In the navigation pane, choose Instances, and then choose the instance that you created with the template in step 4.
+
+11.    Choose the Description view, and then verify that the security group and subnet are configured.
+
+Important: You can't delete the source stack or the source stack's export values, while another stack is importing these values. To update the source stack's export values, manually replace the actual values in the stacks that are importing the source stack's export values. Then, you can update the export values of the source stack.
+
+-------------------
+
+If you do ever need the account ID then it's available as a pseudo-parameter and you can get it from "Ref" : "AWS::AccountId", but I don't think you need it here.
+
+Here's a JSON example of how to create a new IAM policy (allowing s3:Get* on mybucket/*) and associate it with an existing IAM role, whose name you supply as a parameter to the stack:
+
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Add policy to role test",
+  "Parameters": {
+    "TheRoleName": {                    <== Create the role
+      "Type": "String",
+      "Default": "CloudOps",
+      "Description": "Name of role to associate policy with"
+    }
+  },
+  "Resources": {
+    "ThePolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "s3-read",
+        "PolicyDocument": {
+          "Statement": {
+            "Effect": "Allow",
+            "Action": [
+              "s3:Get*"
+            ],
+            "Resource": ["arn:aws:s3:::mybucket/*"]
+          }
+        },
+        "Roles": [
+          {
+            "Ref": "TheRoleName"         <== Reference the role
+          }
+        ]
+      }
+    }
+  }
+}
+
+
+"Ref" refers to resources that are created in the same template.
+
+{ "Resources" : {
+    "Ec2Instance" : {
+        "Type" : "AWS::EC2::Instance",
+        "Properties" : {
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" }, , 
+            "MyExistingSG" ], "KeyName" : "mykey", "ImageId" : "ami-7a11e213" }
+    },
+    "InstanceSecurityGroup" : {
+        "Type" : "AWS::EC2::SecurityGroup",
+        "Properties" : {
+            "GroupDescription" : "Enable SSH access via port 22",
+            "SecurityGroupIngress" : [ {
+                "IpProtocol" : "tcp",
+                "FromPort" : "22",
+                "ToPort" : "22",
+                "CidrIp" : "0.0.0.0/0" } ]
+            }
+        }
+    }
+}
+
+
+Referencing Input Parameters
+----------------------------
+
+"Parameters" : {
+    "WordPressUser" : {
+        "Default" : "admin",
+        "Description" : "The WordPress database admin account username",#
+        "Type" : "String",
+        "MinLength" : "1",
+        "MaxLength" : "16",
+        "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*"
+    },
+    "KeyPair" : {           <== Define "KeyPair" parameter
+        "Description" : "The EC2 Key Pair to allow SSH access to the instance",
+        "Type" : "String"
+    }
+},
+{ "Resources" : {
+    "Ec2Instance" : {
+        "Type" : "AWS::EC2::Instance",
+        "Properties" : {
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" },
+            "KeyName" : { "Ref" : "KeyPair" }      <== Reference "KeyPair" parameter
+        }
+    }
+}
+
+
+Conditional Values
+------------------
+
+Example 1:
+  - Create a region mapping for AMIs.
+  - Reference the region map using the "FindInMap" function when creating the EC2 instance.
+
+{ "Mappings" : {
+    "RegionMap" : {
+        "us-east-1" : { "AMI" : "ami-76t0061f" },
+        "us-west-1" : { "AMI" : "ami-655a961f" },
+        "eu-west-1" : { "AMI" : "ami-8267345f" },
+        "ap-southeast-1" : { "AMI" : "ami-38ure61f" },
+        "us-northeast-1" : { "AMI" : "ami-7834751f" }
+    },
+    "Resources" : {
+        "Ec2Instance" : {
+        "Type" : "AWS::EC2::Instance",
+        "Properties" : {
+            "KeyName" : { "Ref" : "KeyName" },
+            "ImageId" : {
+                "Fn::FindInMap" : [ "RedionMap", { "Ref" : "AWS::Region" }, "AMi ]}
+            }
+        }
+    }
+}
+
+
+Intrinsic functions:
+  Fn::Base64      - Returns Base64 representation of the input string.
+  Fn::FindInMap   - Finding values of keys in a 2 level map.
+  Fn::GetAtt      - Returns the value of an attribute of a resource in a template.
+  Fn::GetAZs      - Returns an array of all availability zones for a specified region.
+  Fn::Join        - Append a set of value into a single value.
+  Fn::Select      - Select a single object from a list of objecs by index.
+  Ref             - Returns the value of a specified parameter or resource.
+  
+Pseudo parameters
+  AWS::NotificationARNs  - Returns list of notification Amazon resource names.
+  AWS::Region            - Returns a sting of the AWS region of the resource.
+  AWS::StackId           - Retruns the stack ID.
+  AWS::StackName         - Returns the stack name.
+
+
+Include non-AWS resources in a CloudFormation stack
+---------------------------------------------------
+
+You can do this by defining custom resources.
+
+
+Bootstrapping Applications and Handling Updates
+-----------------------------------------------
+
+Options:
+  - Use EC2 UserData
+  - Helper scripts
+      ~ cfn-init           - Retrieve and interpret new source metadata
+                              e.g. install packages, create files, start services, ...
+      ~ cfn-get-metadata   - Wrapper to retrieve metadata of a resource.
+      ~ cfn-signal         - Wrapper to signal CloudFormation wake condition.
+                              To synchronize other resources in the stack.
+      ~ cfn-hup            - A deamon to check for updates of metadata. 
+
+UserData example
+----------------
+    "Resources" : {
+      "EC2Instance" : {
+        "Type" : "AWS::EC2::Instance",
+        "Metadata" : {
+            "AWS::CloudFormation::Init" : {
+                "configSets" : {
+                    "Install" : [ "Install" ]
+                },
+
+                "Install" : {
+                    "packages" : {         
+                        "yum": {"httpd":[], "php":[], "mysql-server":[], "php-mysql":[]}      
+                    },
+                    "sources" : {              
+                    },
+                    "files" : {               
+                    },
+                    "commands" : {               
+                    },
+                    "services" : {  
+                        "sysvinit" : {"mysqld"  : 
+                            { "enabled" : "true", "ensureRunning" : "true" },
+                        "httpd"   : { "enabled" : "true", "ensureRunning" : "true" }}             
+                    }
+              }
+            }
+          },
+        "Properties" : {
+          "Tags" : [{"Key" : "StudentID", "Value" : "something"},
+          {"Key" : "StudentName", "Value" : "someone"}],    
+          "InstanceType" : { "Ref" : "InstanceType" },
+          "SecurityGroups" : [ { "Ref" : "WebServerSG" } ],
+          "KeyName" : { "Ref" : "KeyName" },
+          "ImageId" : "ami-01d025118d8e760db",
+  ==>     "UserData": {"Fn::Base64":{"Fn::Join":["", [
+          "#!/bin/bash",
+          "yum update -y",
+          "yum install -y httpd24 php70 mysql56-server php70-mysqlnd",
+          "service httpd start",
+          "chkconfig httpd on",
+          "usermod -a -G apache ec2-user",
+          "chown -R ec2-user:apache /var/www",
+          "chmod 2775 /var/www",
+          "find /var/www -type d -exec sudo chmod 2775 {} +",
+          "find /var/www -type f -exec sudo chmod 0664 {} +",
+          "echo '<?php echo '<h2>Welcome to COS80001. Installed PHP version: ' . phpversion() . '</h2>'; ?>' > /var/www/html/phpinfo.php"
+          ]]}}
+
+        }
+      },
+      
+      
+cfn-init
+--------
+
+
+"UserData" : { "Fn::Base64" :
+  { "Fn::Join" : ["", [
+     "#!/bin/bash -xe\n",
+     "# Install the files and packages from the metadata\n",
+     "/opt/aws/bin/cfn-init -v ",
+     "         --stack ", { "Ref" : "AWS::StackName" },
+     "         --resource WebServerInstance ",
+     "         --configsets InstallAndRun ",
+     "         --region ", { "Ref" : "AWS::Region" }, "\n"
+  ]]}
+}
+
+
+
+"Resources" : {
+    "WebServer" : {
+        "Metadata" : {
+            "Comment1" : "Configure the bootstrap helpers to install the Apache Web Server and PHP",
+            "Comment2" : "The website content is downloaded from the CloudFormationPHPSample.zip file",
+            
+        "AWS::CloudFormation::Init" : {
+            "config" : {
+                "packages" : {
+                    "yum" : {
+                        "mysql"         : [],
+                        "mysql-server"  : [],
+                        "mysql-libs"    : [],
+                        "httpd"         : [],
+                        "php"           : [],
+                        "php-mysql"     : []
+                    }
+                }
+            },
+                
+            "sources" : {
+                "/var/www/html" : "https://s3.amazonaws.com/cloud-formation-examples/CloudFormationPHPSample.zip"
+                }
+            }
+        }
+    }
+}    
+                    
+=======
+
+"services" : {
+  "sysvinit" : {
+    "nginx" : {
+      "enabled" : "true",
+      "ensureRunning" : "true",
+      "files" : ["/etc/nginx/nginx.conf"],
+      "sources" : ["/var/www/html"]
+    },
+    "php-fastcgi" : {
+      "enabled" : "true",
+      "ensureRunning" : "true",
+      "packages" : { "yum" : ["php", "spawn-fcgi"] }
+    },
+    "sendmail" : {
+      "enabled" : "false",
+      "ensureRunning" : "false"
+    }
+  }
+}
+
+   
+
+
+#########
+
+https://www.youtube.com/watch?v=6R44BADNJA8
+
+32:40
+
+
+
+
+#####################
+
+API vs SDK
+
+API = Application Programming Interface
+  e.g. Recipie for a cake
+
+An API is a set of operations that a developer can use to access the backend of a server, assuming that the service is on a remote server. You use the API by calling it from your device to the Cloud (a bunch of servers connected to the Internet) running the service. This is a Representational State Transfer (REST, which is another story) based API, although not all APIs are REST.
+
+
+SDK = Software Development Kit
+  e.g. A premade cake mix to which you add one or two things.
+  
+A SDK is a group of tools, including pieces of code, that gets embedded into a service. The SDK contains APIs and so, it calls on the API when necessary to execute tasks. The result is the developer calls the SDK locally and the SDK calls the API remotely.
+  
+
+So technically speaking, an API is used as a part of a build to ingest information while a SDK is a set of tools you used to build something new. Going a little deeper, an API has a set way to interact with a specific platform like OS X, Android, project software, etc; and a SDK will make a be a nice little package of things a developer needs to create a product, software, and/or application. 
+
+##################
+
+
+Types of AWS Security
+---------------------

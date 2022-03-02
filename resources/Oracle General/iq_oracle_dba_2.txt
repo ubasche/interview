@@ -1,0 +1,391 @@
+
+Additional Oracle Questions
+---------------------------
+1. How many memory layers are in the shared pool?
+   - Library Cache
+   - Data Dictionary Cache
+
+2. How do you find out from the RMAN catalog if a particular archive log has
+   been backed-up?
+    - The V$BACKUP_REDOLOG view queries the Control File so this can be
+      done with or without a Catalog.
+	    select recid,set_stamp,sequence#,first_change#,next_change# 
+	    from  v$backup_redolog;
+
+    - Query against V$BACKUP_PIECE:
+        select r.sequence#, p.handle
+        from v$backup_piece p, v$backup_redolog r
+        where r.set_stamp = p.set_stamp
+        and r.set_count = p.set_count
+        and r.sequence# = 63;
+
+    - Look-a-like queries for datafiles are :
+        select d.file#, p.handle
+        from v$backup_piece p, v$backup_datafile d
+        where d.set_stamp = p.set_stamp
+        and d.set_count = p.set_count
+        and d.file# = 3;
+
+3. How can you tell how much space is left on a given file system and how much
+   space each of the file system's subdirectories take-up?
+   - df -k
+   - du <directory>
+
+4. Define the SGA and:
+    - How you would configure SGA for a mid-sized OLTP environment?
+        - Use no more than 25% of real memory.
+        - Do not allocate more than a total of 4 GB for sgas in total.
+          Otherwise you probably see swapping.
+        - General guidelines, summarize estimates for following:
+            ~ buffer pool
+            ~ redo log buffer
+            ~ total size of all pl/sql code
+            ~ 250 bytes per user * no. of open cursors
+            ~ if using MTS: sort_area_size * number of sessions
+            ~ add 5-10% for misc usage
+        - Start with MEDIUM or LARGE in init.ora then tune the individual
+          sections, especially shared pool and buffer cache.
+    - What is involved in tuning the SGA?
+        - Monitor of the memory usage and swapping of your operating
+          system, and make adjustments based on what you see.
+        - Use sar, vmstat and swap -l
+
+5. What is the cache hit ratio, what impact does it have on performance of an
+   Oracle database and what is involved in tuning it?
+   - Percentage of when data that is found in the cache.
+   - Cache is faster than disk reads.
+   - Increase the size of db_buffer_cache if cache hit ratio is low.
+
+6. Other than making use of the statspack utility, what would you check when
+   you are monitoring or running a health check on an Oracle 8i or 9i database?
+   - DB is analyzed.
+   - Backups did run ok.
+   - Listener is up.
+   - Invalid objects.
+   - Batch jobs did run ok.
+   ...
+
+7. How do you tell what your machine name is and what is its IP address?
+    - uname -a
+    - hostname
+    - ping <hostname>
+    - vi /etc/hosts
+
+8. How would you go about verifying the network name that the local_listener is
+   currently using?
+   - tnsping <name>
+
+9. You have 4 instances running on the same UNIX box. How can you determine
+   which shared memory and semaphores are associated with which instance?
+   - To show memory segments
+        ipcs -pmb           - show all allocated memory segments
+        ipcs -s             - show semaphores
+
+   - To show segments used by Oracle
+        $ORACLE_HOME/bin/sysresv          (from 8.1.x)
+
+     The command syntax to remove the shared memory segments or semaphores
+     is as follows:
+        ipcrm -m <shared memory id>
+        ipcrm -s <semaphore id> 
+
+10. What view(s) do you use to associate a user's SQLPLUS session with his o/s
+    process?
+    - v$process
+
+11. What is the recommended interval at which to run statspack snapshots, and
+    why?
+    - You should have a baseline (of normal load) you can compare to.
+    - Run it once a day or at the beginning and end of a batch job.
+
+12. What spfile/init.ora file parameter exists to force the CBO to make the
+    execution path of a given statement use an index, even if the index scan
+    may appear to be calculated as more costly?
+    - OPTIMIZER_INDEX_COST_ADJ=20        (percentage of cost of index usage)
+
+13. Assuming today is Monday, how would you use the DBMS_JOB package to
+    schedule the execution of a given procedure owned by SCOTT to start
+    Wednesday at 9AM and to run subsequently every other day at 2AM.
+
+    VARIABLE jobno NUMBER 
+
+    BEGIN
+        DBMS_JOB.SUBMIT(
+            job => :jobno 
+           ,what => 'scott.do_it(1000);'
+           ,next_date => trunc(sysdate) + 9/24
+           ,interval => 'trunc(sysdate) + 1 + 2/24'   -- run at 02:00 at night
+           );
+
+       COMMIT;
+    END;
+    /
+
+14. How would you edit your CRONTAB to schedule the running of /test/test.sh to
+    run every other day at 2PM?
+    00 14 * * 1,3,5 /test/test.sh 
+    
+15. What do the 9i dbms_standard.sql_txt() and dbms_standard.sql_text()
+    procedures do?
+    - Couldn't find these procedures.
+
+16. In which dictionary table or view would you look to determine at which time
+    a snapshot or MVIEW last successfully refreshed?
+    - dba_mviews (field last_refresh_date)
+
+17. How would you best determine why your MVIEW couldn't FAST REFRESH?
+    - What is the error message when running the fast refresh?
+        exec DBMS_MVIEW.REFRESH ('viewname','F');
+    - Does the MView log exist (MLOG$_<table_name> on the master table)?
+    - Has the user doing the refresh permissions on the MView log?
+    - Has the database link user permissions on the MView log?
+
+18. How does propagation differ between Advanced Replication and Snapshot
+    Replication (read-only)?
+    - REPADMIN accounts must be created
+    - Replication groups must be defined
+
+19. Which dictionary view(s) would you first look at to understand or get a
+    high-level idea of a given Advanced Replication environment?
+    - DBA_REPCAT and DBA_REPCAT_% views.
+
+20. How would you begin to troubleshoot an ORA-3113 error?
+    - ora-3113 "end of file on communication channel reached"
+    - Check if the problem is just restricted to:
+        ~ One particular UNIX user
+        ~ Any UNIX user 
+    - Check if the problem is just restricted to:
+        ~ One particular ORACLE logon
+        ~ Any ORACLE logon
+    - In a client-server configuration does this occur from: 
+        ~ Any client
+        ~ Just one particular client 
+    ...
+
+21. Which dictionary tables and/or views would you look at to diagnose a
+    locking issue?
+    - v$lock
+    - v$session
+
+22. An automatic job running via DBMS_JOB has failed. Knowing only that "it's
+    failed", how do you approach troubleshooting this issue?
+    - Check your alert log. The error code will be in a trace file.
+
+23. How would you extract DDL of a table without using a GUI tool?
+    - dbms_metadata.get_ddl
+
+24. You're getting high "busy buffer waits" - how can you find what's causing
+    it?
+    Basically run statspack to get some info, then query internal views to
+    get file that includes the block waited for and with this you can
+    determine the segment.
+
+    - Run statspack or following sql to find the type of object that causes
+      the waits.
+        SELECT time, count, class 
+        FROM V$WAITSTAT 
+        ORDER BY time,count
+    - This shows the class of block with the most waits at the BOTTOM of
+      the list.
+        SELECT kcbwhdes, why0+why1+why2 "Gets", "OTHER_WAIT"
+        FROM x$kcbsw s, x$kcbwh w
+        WHERE s.indx=w.indx
+        AND s."OTHER_WAIT">0
+        ORDER BY 3;
+    - Additional information regarding which files contain the blocks being
+      waited for can be obtained from the internal <View:X$KCBFWAIT> thus:
+        SELECT count, file#, name
+        FROM x$kcbfwait, v$datafile
+        WHERE indx + 1 = file#
+        ORDER BY count;
+    - The segments in each file can be seen using a query like:
+        SELECT distinct owner, segment_name, segment_type
+        FROM dba_extents
+        WHERE file_id= &FILE_ID;
+
+
+25. What query tells you how much space a tablespace named "test" is taking up,
+    and how much space is remaining?
+    - query dba_free_space and dba_datafiles
+
+26. Database is hung. Old and new user connections alike hang on impact. What
+    do you do? Your SYS SQLPLUS session IS able to connect.
+    - Check if archive destination is full.
+        If yes, free up some archive space.
+    - Check if tablespace is full.
+        If yes, add space to the full tablespace.
+
+27. Database crashes. Corruption is found scattered among the file system
+    neither of your doing nor of Oracle's. What database recovery options are
+    available? Database is in archive log mode.
+    - Find out which Oracle files are affected and restore the corrupted
+      files from backup.
+    - Restore the complete database from backup.
+    - Recover the database or datafiles.
+
+28. Illustrate how to determine the amount of physical CPUs a Unix Box
+    possesses (LINUX and/or Solaris).
+    - prtconf | grep -i proc
+    - mpstat 5 5                 # 1 line per CPU
+
+29. How do you increase the OS limitation for open files (LINUX and/or
+    Solaris)?
+    - AIX: use smit or edit /etc/security/limits
+    - Solaris: add following lines to /etc/system
+        set rlim_fd_max = 4096
+        set rlim_fd_cur = 1024
+    - Check the limit
+        ulimit -n
+        ulimit -a
+    - To increase the soft limit
+        ulimit -Sn new_value
+
+30. Provide an example of a shell script which logs into SQLPLUS as SYS,
+    determines the current date, changes the date format to include minutes &
+    seconds, issues a drop table command, displays the date again, and finally
+    exits.
+        sqlplus '/ as sysdba' <<end_of_sql
+        select sysdate from dual;
+        alter session set nls_date_format = 'DD-MON-YYYY HH24:MI:SS';
+        ...
+        exit
+        end_of_sql
+
+31. Explain how you would restore a database using RMAN to Point in Time?
+
+    run {
+        set until time "TO_DATE('01/14/2002 12:02:14','DD/MM/YYYY HH24:MI:SS')";
+        # set until logseq 379 thread 1;
+        # set until SCN 10000;
+
+        shutdown immediate;
+        startup mount;
+
+        allocate channel t1 type 'SBT_TAPE';
+        restore database;
+        recover database;
+        sql 'alter database open resetlogs';
+    }
+
+32. How does Oracle guarantee data integrity of data changes?
+    - Locks records that only the current process can change them.
+    - Lock will be released when changes are commited.
+
+33. Which environment variables are absolutely critical in order to run the
+    OUI?
+    - DISPLAY
+
+34. What SQL query from v$session can you run to show how many sessions are
+    logged in as a particular user account?
+    select username, count(*)
+    from v$session
+    group by username;
+
+35. Why does Oracle not permit the use of PCTUSED with indexes?
+    - Table data is stored unstructured, index data is stored in a b-tree
+      structure.
+    - PCTFREE would prevent to reuse space therefore the index would become
+      unbalanced. Always deleting branches from the left side and adding to
+      the right side.
+
+36. What would you use to improve performance on an insert statement that
+    places millions of rows into that table?
+    - If batch load drop and recreate the index.
+    - Do array inserts.
+
+37. What would you do with an "in-doubt" distributed transaction?
+    - Try to fix the problem, e.g. the in-doubt transaction is caused by a
+      network failure => try to fix the network.
+    - If you need to manually fix it:
+        ~ List the pending transaction
+            select local_tran_id, state, fail_time, db_user, os_user
+            from dba_2pc_pending;
+        ~ Rollback the pending transaction
+            ROLLBACK FORCE '&trans_id';
+        ~ Rerun transaction when problem is fixed.
+
+38. What are the commands you'd issue to show the explain plan for "select *
+    from dual"?
+    - explain plan for select * from dual;
+
+39. In what script is "snap$" created? In what script is the "scott/tiger"
+    schema created?
+        - snap$: catrepc.sql
+        - Scott: utlsampl.sql
+
+40. If you're unsure in which script a sys or system-owned object is created,
+    but you know it's in a script from a specific directory, what UNIX command
+    from that directory structure can you run to find your answer?
+    - grep -i <object_name> *
+
+41. How would you configure your networking files to connect to a database by
+    the name of DSS which resides in domain icallinc.com?
+
+    tnsnames.ora:
+
+    DDS =
+      (DESCRIPTION =
+        (ADDRESS_LIST =
+          (ADDRESS = (PROTOCOL = TCP)(HOST = icallinc.com)(PORT = 1521))
+        )
+        (CONNECT_DATA =
+          (SERVICE_NAME = icallinc.com)
+        )
+      )
+
+42. You create a private database link <link name> and upon connection, fails
+    with: ORA-2085: <Link name> connects to <fully qualified remote db name>.
+    What is the problem? How would you go about resolving this error?
+    - Check if global_names is set to true. If yes, the dblink must have
+      the same name. To get the global name do:
+        select * from global_name;
+
+43. I have my backup RMAN script called "backup_rman.sh". I am on the target
+    database. My catalog username/password is rman/rman. My catalog db is
+    called rman. How would you run this shell script from the O/S such that it
+    would run as a background process?
+    - rman target / rcvcat rman/rman@rman backup_rman.sh
+
+44. Explain the concept of the DUAL table.
+    - Single row dummy table.
+
+45. What are the ways tablespaces can be managed and how do they differ?
+    - dictionary : uses free lists to find free data blocks
+    - locally : uses bitmaps to find free data blocks
+
+46. From the database level, how can you tell under which time zone a database
+    is operating?
+    - select DBTIMEZONE from dual;
+
+47. What's the benefit of "dbms_stats" over "analyze"?
+    - dbms_stats does a better job in estimating statistics
+    - ANALYZE command does not support features such as parallelism, stale
+      statistics collection, etc. 
+
+48. Typically, where is the conventional directory structure chosen for Oracle
+    binaries to reside?
+    - OFA (oracle flexible architecture)
+    - /u01/app/oracle/product/<version>/bin
+
+49. You have found corruption in a tablespace that contains static tables that
+    are part of a database that is in NOARCHIVE log mode. How would you restore
+    the tablespace without losing new data in the other tablespaces?
+    - startup mount
+    - alter tablespace <ts> offline immediate;
+    - alter database open;
+
+    - drop tablespace
+    - import tablespace as transportable tablespace
+
+50. How do you recover a datafile that has not been physically been backed up
+    since its creation and has been deleted. Provide syntax example.
+    - startup mount
+    - alter tablespace <ts> offline immediate;
+    - alter database open;
+    - select * from recover_file;  -- Find out which files need recovery
+    - alter database create datafile '/disk...   -- recreate the file
+    - restore all needed archive logs
+    - recover datafile 
+    - alter database datafile '/disk1/data/file01.dbf' online;
+	 	
+

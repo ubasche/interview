@@ -1,0 +1,324 @@
+
+RAC
+---
+
+Oracle Clusterware, formerly known as Cluster Ready Services (CRS)
+
+Oracle Clusterware Commands Summary
+
+Command         Description 
+--------------  -------------------------------------------------------
+crs_getperm     Inspects the permissions associated with a resource.
+crs_profile     Creates, validates, deletes, and updates an Oracle Clusterware application profile
+crs_register    Registers configuration information for an application with the OCR.
+crs_relocate    Relocates an application profile to another node.
+crs_setperm     Sets permissions associated with a resource.
+crs_stat        Lists the status of an application profile.
+crs_start       Starts applications that have been registered.
+crs_stop        Stops an Oracle Clusterware application.
+crs_unregister  Removes the configuration information for an application profile from the OCR.
+ 
+E.g.:
+    crs_stat -t
+    /app/oracle/CRS/bin/crs_stat -t
+
+The Oracle Clusterware requires two clusterware components: a voting disk to record node 
+membership information and the Oracle Cluster Registry (OCR) to record cluster 
+configuration information.
+
+CRS components: 
+	- Voting disk to record node membership information
+	- Oracle Cluster Registry (OCR) to record cluster configuration information
+
+
+
+Useful commands
+~~~~~~~~~~~~~~~
+
+- Get info about the cluster nodes
+    $ olsnodes                   # list the nodes
+    $ olsnodes -p -i             # show private interconnect and virtual host name
+    $ olsnodes -n -p -i -g -v    # get lots of node info
+
+- Do a healthcheck on Oracle clusterware
+    $ crsctl check crs
+    $ crsctl query crs softwareversion
+    $ crsctl query crs activeversion
+
+    - Check if clusterware is running
+        $ ps -ef |grep crsd                # cluster ready services
+        $ ps -ef |grep cssd                # cluster syncronysation service
+        $ ps -ef |grep evmd                # event manager
+
+
+        Example output
+
+        crsd
+            root     14659     1  0 Apr07 ?        00:53:35 /app/oracle/CRS/bin/crsd.bin reboot
+
+        cssd
+            root     14658     1  0 Apr07 ?        00:43:09 /bin/sh /etc/init.d/init.cssd fatal
+            root     15350 14658  0 Apr07 ?        00:00:00 /bin/sh /etc/init.d/init.cssd oclsomon
+            root     15352 14658  0 Apr07 ?        00:00:00 /bin/sh /etc/init.d/init.cssd daemon
+            root     15414 15350  0 Apr07 ?        00:00:00 /bin/su -l oracle -c /bin/sh -c 'cd /app/oracle/CRS/log/lnl06d-0101b/cssd/oclsomon; ulimit -c unlimited; /app/oracle/CRS/bin/oclsomon  || exit $?'
+            oracle   15423 15414  0 Apr07 ?        00:00:00 /bin/sh -c cd /app/oracle/CRS/log/lnl06d-0101b/cssd/oclsomon; ulimit -c unlimited; /app/oracle/CRS/bin/oclsomon  || exit $?
+            root     15623 15352  0 Apr07 ?        00:00:00 /bin/su -l oracle -c /bin/sh -c 'ulimit -c unlimited; cd /app/oracle/CRS/log/lnl06d-0101b/cssd;  /app/oracle/CRS/bin/ocssd  || exit $?'
+            oracle   15630 15623  0 Apr07 ?        00:00:00 /bin/sh -c ulimit -c unlimited; cd /app/oracle/CRS/log/lnl06d-0101b/cssd;  /app/oracle/CRS/bin/ocssd  || exit $?
+            oracle   15711 15630  0 Apr07 ?        01:05:30 /app/oracle/CRS/bin/ocssd.bin
+
+        evmd
+            root     14657     1  0 Apr07 ?        00:00:00 /bin/su -l oracle -c sh -c 'ulimit -c unlimited; cd /app/oracle/CRS/log/lnl06d-0101b/evmd; exec /app/oracle/CRS/bin/evmd '
+            oracle   15422 14657  0 Apr07 ?        00:06:39 /app/oracle/CRS/bin/evmd.bin
+
+
+
+
+- Do a healthcheck on OCR
+    $ ocrcheck
+
+- To export, import, backup, restore, ... of the OCR, use ocrconfig.
+  See docu for details.
+    $ ocrconfig ...
+
+- Show backups of the Oracle Cluster Registry (OCR file).  
+    $ /app/oracle/CRS/bin/ocrconfig -showbackup
+
+- Check status of cluster on a node
+    $ crs_stat
+    $ crs_stat -t
+
+- Check if instances are running
+    $ srvctl status database -d <db>
+
+- Check the status of the nodeapps
+    $ srvctl status nodeapps -n <node>
+
+- Check the ONS deamon
+    $ onsctl ping
+
+- Check which listener services are running
+    $ lsnrctl status
+    $ lsnrctl services
+
+
+
+
+---------------------------------------------------------------------------
+
+Some of the Oracle9i RAC-specific components include:
+
+- Operating system-dependent clusterware 
+- Real Application Clusters-enabled ORACLE_HOME 
+- Oracle Server Management (SRVM) for Real Application Clusters 
+
+---------------------------------------------------------------------------
+
+
+Usefull selects:
+
+    SELECT * FROM v$active_instances; 
+
+---------------------------------------------------------------------------
+
+Bounce the listener in a RAC environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+crs_stat
+crs_stat -t
+lsnrctl status <listener_name>
+ps -ef | grep tns
+
+srvctl start listener -n lnl36d-6002a
+srvctl stop listener -n lnl36d-6002a
+
+
+
+---------------------------------------------------------------------------
+
+
+Add a new RAC instance
+----------------------
+
+Create the new instance
+~~~~~~~~~~~~~~~~~~~~~~~
+- Make sure the symbolic link for the spfile on the new node points
+  to the same file as on the existing nodes.
+- Check the altert.log
+    $ tail -f alert_SID.log
+
+- List the spfile
+    $ srvctl config database -d <db> -a
+
+!!! only if possible !!!
+- Stop the database
+    $ srvctl stop database -d <db>
+
+- Configure the spfile for tne new instance.
+    $ strings <spfile>
+    SQL> create pfile='..' from spfile='..';
+    $ vi <pfile>
+    SQL> create spfile='..' from pfile='..';
+
+- On existing instance, add a new thread for the new instance
+    SQL> alter database enable thread 2;
+
+- Create redo log files and undo tablespace for new instance
+    SQL> alter database add logfile thread 2 group 4 '+DATA_GRP1' size 500m;
+    SQL> alter database add logfile thread 2 group 5 '+DATA_GRP1' size 500m;
+    SQL> alter database add logfile thread 2 group 6 '+DATA_GRP1' size 500m;
+    SQL> create undo tablespace ...
+
+    SQL> select * from v$thread;
+    SQL> select * from v$log;
+    SQL> select * from v$logfile;
+
+- Start the new instance using sqlplus
+    $ export ORACLE_SID=<sid>
+    $ export ORACLE_HOME=<orahome>
+    $ sqlplus "/ as sysdba"
+    SQL> startup
+
+- Shutdown the new instance
+    SQL> shutdown immediate
+
+
+Add the new instance to CRS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    $ srvctl add instance -d <db> -i <sid> -n <node>
+    $ srvctl start instance -d <db> -i <sid>
+    $ crs_stat -t               # to check the output (or "$ crsstat")
+
+
+LDAP
+~~~~
+- Add LDAP for the new instance.
+
+
+---------------------------------------------------------------------------
+
+Remove an existing RAC instance
+-------------------------------
+
+Remove the instance from CRS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    srvctl stop instance -d <db> -i <sid>
+    srvctl remove instance -d <db> -i <sid>
+
+    srvctl status database -d <db>            # check status of instances
+
+    srvctl start database -d <db>             # to start all the other instances if down
+
+Do cleanup
+~~~~~~~~~~
+
+- Remove thread and it's log files
+    alter database disable thread 2;
+    alter database drop logfile '...';
+    alter database drop logfile '...';
+    ...
+
+- Remove obsolete entries in the spfile on old node
+    $ strings <spfile>
+    SQL> create pfile='..' from spfile='..';
+    $ vi <pfile>
+    SQL> create spfile='..' from pfile='..';
+
+- Remove the LDAP entries that point to the old instance.
+        
+---------------------------------------------------------------------------
+
+All instances except for the primary instance must be shutdown prior to performing an RMAN restore.
+
+
+
+---------------------------
+
+Recovery file dest of development database which is not backed up is full.
+Delete the archive log file in ASM using RMAN:
+
+    $ rman nocatalog target /
+
+    RMAN> delete noprompt archive log all;
+
+---------------------------
+
+Do a database backup on RAC:
+    1. Run the backup from the primary instance (this could be any).
+
+Do a database restore on RAC:
+    1. Stop all instances. 
+        $ srvctl stop db -d <DATABASE> -o abort
+    2. Start up the primary instance and restore and recover the database.
+        ...
+    3. Start up the RAC database 
+        $ srvctl start db -d <DATABASE> 
+
+---------------------------
+
+
+
+
+
+    Starting the Oracle RAC 9i Environment 
+
+    1. Start the GSD (Global Services Daemon).
+    2. Start up the Oracle instance (and related services).
+
+        $ gsdctl start
+        $ srvctl start instance -d orcl -i orcl1
+
+    Stopping the Oracle RAC 9i Environment 
+
+    1. Stop up the Oracle instance (and related services).
+    2. Stop the GSD (Global Services Daemon).
+
+        $ srvctl stop instance -d orcl -i orcl1
+        $ gsdctl stop
+
+
+
+    --------------------
+
+
+    Starting the Oracle RAC 10g Environment 
+
+    0. Start CRS
+
+        sudo crsctl start crs
+        crs_stat -t
+
+    1. Start the node applications (Virtual IP, GSD, TNS Listener, and ONS).
+    2. Bring up the ASM instance. 
+    3. Start up the Oracle instance (and related services).
+    4. Start the Enterprise Manager Database console. 
+
+        $ export ORACLE_SID=orcl1
+        $ srvctl start nodeapps -n linux1
+        $ srvctl start asm -n linux1
+        $ srvctl start instance -d orcl -i orcl1
+        $ emctl start dbconsole
+
+    Stopping the Oracle RAC 10g Environment 
+
+    1. Stop the Enterprise Manager Database console. 
+    2. Stop the Oracle instance.
+    3. Bring down the ASM instance. 
+    4. Shut down the node applications (Virtual IP, GSD, TNS Listener, and
+       ONS). 
+
+        $ export ORACLE_SID=orcl1
+        $ emctl stop dbconsole
+        $ srvctl stop instance -d orcl -i orcl1
+        $ srvctl stop asm -n linux1
+        $ srvctl stop nodeapps -n linux1
+
+
+
+    Start/stop all the instances and their enabled services (10g).
+
+    $ srvctl start database -d orcl
+
+    $ srvctl stop database -d orcl
+
+
+
+

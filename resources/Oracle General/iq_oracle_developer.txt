@@ -1,0 +1,764 @@
+
+Interview Questions - Oracle Developer
+======================================
+
+Sections:
+    SQL and PL/SQL
+    Pro*C
+    Forms
+    Reports
+    Unix
+
+xxx
+================
+ SQL and PL/SQL
+================
+
+--------------------------------------------------------------------------- 
+Q. Where in Oracle would you find a LOOP statement?
+
+A. PL/SQL
+
+--------------------------------------------------------------------------- 
+Q. What is an outer join?
+
+A. A row must always be returned in a two or more table join even if 
+   one of the tables may not contain a matching row
+
+--------------------------------------------------------------------------- 
+Q. If you select columns from 2 tables and neither has any indexes, 
+   which one is the driving table (Using the Rules based optimiser)?
+
+A. The one declared last in the from statement
+
+--------------------------------------------------------------------------- 
+Q. If you select columns from 2 tables and neither has any indexes, 
+   which one is the driving table (Using the Cost based optimiser)?
+
+A. Could be either
+
+--------------------------------------------------------------------------- 
+Q. What is the purpose of an index?
+
+   - To speed up data retrieval
+   - To ensure uniqueness of primary key
+
+--------------------------------------------------------------------------- 
+Q. How would you stop an index being used?
+
+A. - By concatenating NULL to the column
+   - using a hint /*+ FULL */
+
+--------------------------------------------------------------------------- 
+Q. How does the processing of a correlated subquery differ from a 
+   noncorrelated subquery?
+
+A. A noncorrelated subquery is evaluated only once
+
+--------------------------------------------------------------------------- 
+Q. How can you find out how your SQL will be executed?
+
+A. Use Explain Plan (plan_table needs to be generated with utlxplan.sql)
+
+--------------------------------------------------------------------------- 
+Q. How would you remove a duplicate row from a table?
+
+A. Use SQL + rowid
+
+--------------------------------------------------------------------------- 
+Q. What happens when an error occurs within PL/SQL?
+
+A. An exception is raised and control passes to exception handler
+
+--------------------------------------------------------------------------- 
+Q. What are tables in PL/SQL?
+
+A. Oracles way to define an array in PL/SQL
+
+   You have first to declare the table type than you can declare PL/SQL 
+   tables of that type.
+
+    DECLARE
+        TYPE EnameTabTyp IS TABLE OF emp.ename%TYPE
+             INDEX BY BINARY_INTEGER;
+
+        ename_tab    EnameTabTyp;
+    BEGIN
+        . . .
+    END;
+
+--------------------------------------------------------------------------- 
+Q. How can you assign a value to a table variable?
+
+A. plsql_table_name(primary_key_value) := plsql_expression 
+   (e.g. sal_tab(5) := salary + increase)
+
+--------------------------------------------------------------------------- 
+Q. How do you use records in PL/SQL?
+
+A. You have first to declare the record type than  you can declare 
+   PL/SQL record variables of that type.
+
+    DECLARE
+        TYPE dept_rec_typ IS RECORD (
+             dept_no    NUMBER(2) NOT NULL := 99,
+             dname      dept.dname%TYPE,
+             loc        dept.loc%TYPE);
+
+        dept_rec    dept_rec_typ;
+    BEGIN
+        . . .
+    END;
+
+--------------------------------------------------------------------------- 
+Q. How can you assign values to a record?
+
+A. - record_name.field_name := plsql_expression
+   - dept_rec1 := dept_rec2 ( only if both records are of the same type)
+   - you can use the SELECT or FETCH statement to fetch column values 
+     into a record
+
+--------------------------------------------------------------------------- 
+Q. What is a mutating table and how can you get around it?
+
+A. When a trigger tries to update a row it is currently using. Use views
+   or temporary tables (selecting from one while updating the other).
+
+--------------------------------------------------------------------------- 
+Q. Describe %ROWTYPE and %TYPE in PL/SQL.
+
+A. %ROWTYOE : assosiate a variable with a table row
+   %TYPE : assosiate a variable with a table column type
+
+--------------------------------------------------------------------------- 
+Q. Name Oracle packages for developers.
+
+A. dbms_sql
+   dbms_pipe
+   dbms_transaction
+   dbms_lock
+   dbms_alert
+   dbms_output
+   dbms_job
+   dbms_utility
+   dbms_ddl
+   utl_file
+
+--------------------------------------------------------------------------- 
+Q. What is an PL/SQL table?
+
+A. PL/SQL tables are scalar arrays referenced by a binary integer.
+
+--------------------------------------------------------------------------- 
+Q. How do you generate debugging output from PL/SQL?
+
+A. - use dbms_output
+   - use dbms_pipe
+   - use utl_file
+
+--------------------------------------------------------------------------- 
+Q. Name different types of triggers.
+
+A. - before, after
+   - row, table
+   - insert, update, delete
+
+--------------------------------------------------------------------------- 
+Q. You join a remote table. How can you reduce network traffic?
+
+A. Push the processing to the remote server by using a view to pre- 
+   select the data for the join. This will result in only the data
+   required for the join being sent accross.
+
+--------------------------------------------------------------------------- 
+Q. What is tkprof and how is it used?
+
+A. tkprof is a tuning tool used to determing cpu and execution times
+   for SQL statements.
+
+   - set timed statistics to true
+   - set tracing on (for database or session)
+   - use tkprof for the generated trace file
+
+--------------------------------------------------------------------------- 
+
+xxx
+=======
+ Pro*C
+=======
+
+--------------------------------------------------------------------------- 
+Q. What are indicator variables?
+
+A. Indicates if host variable contains a value (if -1 than there is 
+   no value)
+
+--------------------------------------------------------------------------- 
+Q. Why use arrays in Pro*C?
+
+A. Efficiency
+
+--------------------------------------------------------------------------- 
+Q. What does a positive value >0 in SQLCode indicate?
+
+A. A successful execution but with an exception condition
+
+--------------------------------------------------------------------------- 
+Q. What does the PREPARE statement do?
+
+A. Associates a statement name with a string containing an SQL 
+   statement
+
+--------------------------------------------------------------------------- 
+
+xxx
+=======
+ Forms
+=======
+
+--------------------------------------------------------------------------- 
+Q. In Forms, how would you validate the contents of a field?
+
+A. Use On-validate-field-item
+
+--------------------------------------------------------------------------- 
+Q. In Forms, how would you stop the Oracle error duplicate value in 
+   index being raised and display a user-friendly error message?
+
+A. Check if record already on database in Pre-insert and Pre-update 
+   triggers and field level
+
+--------------------------------------------------------------------------- 
+Q. What is a control block?
+
+A. A block not associated with any table in the database
+
+--------------------------------------------------------------------------- 
+Q. Why use Global variables?
+
+A. To pass information from one form to another or within a form
+   Set a global variable:   default('ABC', 'global.var1')
+
+--------------------------------------------------------------------------- 
+Q. What levels of validation are available within a form?
+
+A. - Field
+   - Record
+   - Block
+   - Form
+
+--------------------------------------------------------------------------- 
+Q. How do you create a scroll area?
+
+A. Create a canvas of type stacked
+
+--------------------------------------------------------------------------- 
+Q. How can you restrict the values a user enters into a field?
+
+A. - Validate against LOV
+   - On-validate-item trigger
+   - Item ranges
+   - Listbox
+   - Radio Group
+   - Check Boxes
+
+--------------------------------------------------------------------------- 
+Q. Briefly describe the three types of co-ordination between a master 
+   and a detail record.
+
+A. - Immediate:
+         When master changes, detail changes immediately 
+   - Deferred with autoquery:
+         Details are changed automatically but only when the user 
+         navigates to the detail block
+   - Deferred with no autoquery:
+         Details are not changed automatically. The user has to 
+         requery them
+
+--------------------------------------------------------------------------- 
+Q. What is the simplest means of preventing a user querying or 
+   inserting into a detail block when there is no master record present?
+
+A. Set the "Prevent Masterless operation" property of the master/detail 
+   relation
+
+--------------------------------------------------------------------------- 
+Q. How do you create a toolbar?
+
+A. Create a canvas of type horizontal or vertical toolbar. Then attach 
+   the canvas to a window (toolbar property).
+
+--------------------------------------------------------------------------- 
+Q. Give the PL*SQL code required to show an alert.
+
+A.  
+    DECLARE
+        dummy_var    NUMBER;
+    BEGIN
+        dummy_variable := show_alert('alert_name');
+    END;
+
+--------------------------------------------------------------------------- 
+Q. How do you make an item enterable at runtime?
+
+A. Use the set_item_property packaged procedure. 
+   ( syntax: set_item_property(item, enabled, property_true) )
+
+--------------------------------------------------------------------------- 
+Q. How are user defined parameters passed from forms to reports or 
+   graphics when the run_product command is used?
+
+A. A parameter list is used
+
+--------------------------------------------------------------------------- 
+Q. How can form items be referenced from a menu?
+
+A. The name_in procedure must be used 
+   ( syntax: name_in('block.item_name') )
+
+--------------------------------------------------------------------------- 
+Q. Briefly describe three ways a form can call another form.
+
+A. - Open_form : used to open an independent form, e.g. have more than 
+                 one open at the same time
+   - New_form  : replaces the current form with a new one
+   - Call_form : calls a new form, keeping the parent form active. When 
+                 the called form is exited Oracle returns to the parent 
+                 form
+
+--------------------------------------------------------------------------- 
+Q. What is an Object Group?
+
+A. A container for a group of objects.
+
+--------------------------------------------------------------------------- 
+Q. How can you reuse code?
+
+A. - Referencing objects
+   - Creating libraries for program units (user named procedures and 
+     functions)
+   - Reference triggers from other modules
+
+--------------------------------------------------------------------------- 
+Q. What is the difference between Property Classes and Visual 
+   Attributes?
+
+A. - Visual Attributes are only for font, colour and pattern
+   - You can change objects by changing visual attributes at runtime 
+     (does not work with property classes)
+   - Named visual attributes overwrite property classes
+
+--------------------------------------------------------------------------- 
+Q. How do you go to the next field/record in the on-validate-field 
+   trigger?
+ 
+A. You cannot navigate in a restricted trigger such as the 
+   on-validate-field trigger. Use a timer instead.
+
+--------------------------------------------------------------------------- 
+Q. How can you commit a insert/update/delete command executed in forms?
+
+A. Use forms_ddl('COMMIT')
+
+--------------------------------------------------------------------------- 
+Q. What do the following files with extension contain?
+
+    a) fmb
+    b) fmt
+    c) fmx
+    d) pll
+    e) pld
+    f) plx
+
+A.  a) fmb : Forms binary file (source)
+    b) fmt : Forms text file
+    c) fmx : Forms executable 
+    d) pll : Forms library (source and compiled code)
+    e) pld : Forms library (compiled code)
+    f) plx : Forms library (executable)
+
+--------------------------------------------------------------------------- 
+Q. What is the difference between a window and a canvass?
+
+A. - A window is a frame in which the form does appear. It has one or
+     more canvases.
+   - A canvas is a structure to position items. A canvas appears inside
+     a window.
+ 
+--------------------------------------------------------------------------- 
+Q. Name the different canvasses
+
+A. - content canvas
+   - stacked canvas
+   - horizontal / vertical toolbar canvas
+   - tabbed canvas (Forms 5) 
+
+--------------------------------------------------------------------------- 
+Q. How would you share program units between modules?
+ 
+A. - Forms libraries
+   - Reference code (procedures/functions/triggers) from an other forms
+   - Database procedures / functions
+    
+   Which way of sharing code is used depends on the single case.
+
+--------------------------------------------------------------------------- 
+Q. Give an example of a Block Validating Trigger
+ 
+A. When-validate-block
+
+--------------------------------------------------------------------------- 
+Q. What are the differences between property classes and named visual
+   attributes?
+ 
+A. - Visual attributes are only for font, colour and pattern.
+   - You can change objects by changing visual attributes at runtime 
+     (does not work with Property Classes).
+   - Named visual attributes overwrite property classes.
+   - Property classes include additional attributes like size,
+     position, ...
+
+--------------------------------------------------------------------------- 
+Q. What is the difference between Pre and Post Triggers and
+   When-New-Form instance Triggers?
+
+A. - When-new-form-instance trigger fires during common database
+     actions.
+   - Pre and Post Triggers are navigational triggers and therfore
+     cannot call restricted procedures.
+ 
+--------------------------------------------------------------------------- 
+Q. How would you pass parameters between form?
+ 
+A. - parameter list
+
+--------------------------------------------------------------------------- 
+Q. Explain the use of the SYSTEM.MODE Function?
+
+A. - check the form state
+ 
+--------------------------------------------------------------------------- 
+Q. What functions and which form-level-trigger would you use with
+   Timers?
+ 
+A. - listener functions
+   - for automatic screen refresh (eg status field or time)
+   - for calling a restricted function from a navigational trigger
+     (should be avoided if possible)
+
+   form-level-trigger:  When-timer-expired
+
+--------------------------------------------------------------------------- 
+Q. Explain OPEN_FORM,CALL_FORM and NEW-FORM and which is the preferred
+   way to implement multiple-form functionality?
+ 
+A. Open_form: used to open an independent from, 
+              if you want to have more than one open at the same time
+   New_form:  replaces the current form with a new one
+   Call_form: calls a new form, keeping the parent form active. When
+              the called form is exeted, returns to the parent form.
+
+   For multiple form functionality use open_form.
+
+--------------------------------------------------------------------------- 
+Q. What is an UNRESTRICTED PROCDURE?
+ 
+A. - Procedure that can be called in all triggers. No restriction of
+     use.
+
+--------------------------------------------------------------------------- 
+Q. Which triggers should avoid calling restricted triggers and why?
+ 
+A. - Validation triggers.
+   - Navigational triggers.
+
+   The call causes an error and there is the danger of creating
+   indefinite loops.
+   (The restricted trigger could cause a new validation).
+
+--------------------------------------------------------------------------- 
+Q. Which triggers should be used for suppressing the following Forms
+   default functionality:
+
+    a) commit
+    b) insert
+    c) select
+    d) update
+ 
+A.  a) commit       on_commit
+    b) insert       on_insert
+    c) select       on_select
+    d) update       on_update
+
+--------------------------------------------------------------------------- 
+Q. What is a record group and how would you create a static record
+   group?
+ 
+A. A record group contains columns and rows based on a query statment
+   or column definitions.
+
+   Create a record group in the Forms designer. Type the static select
+   statement into the attribute of the record group.
+
+--------------------------------------------------------------------------- 
+Q. What are LOVs?
+ 
+A. List of values for a field. Used to give a list of valid values to
+   the User.
+
+--------------------------------------------------------------------------- 
+Q. How does one create a static LOV?
+ 
+A. Create a record group in the Forms designer.
+   Create a LOV in the Forms designer.
+   Assign the record group to the LOV.
+
+--------------------------------------------------------------------------- 
+Q. How would you dynamically populate a list item with data from the
+   database?
+ 
+A. use populate_group and populate_list:
+
+    DECLARE
+        group_id    recordgroup;
+        list_id item;
+        satus       number;
+    BEGIN
+        list_id := find_item('item_name');
+        group_id := create_group_from_query('name', 
+                        'select column from table');
+        status := populate_group('name');
+        populate_list(list_id, 'name');
+    END;
+
+
+--------------------------------------------------------------------------- 
+Q. Name two methods which dynamically display LOVs and what are their
+   differences?
+ 
+A. - use LOV for validation: LOV pops up automaticaly if the field
+     value is not part of LOV on field validation
+   - auto display LOV: LOV is allways displayed for data entry to the
+     field
+
+--------------------------------------------------------------------------- 
+Q. How would you create a user Exit Interface to Foreign Function?
+
+A. - place the Foreign Function into a DLL
+   - use the ora_ffi functions to interact with the Foreign Function:
+        ora_ffi.load_library
+        ora_ffi.register_function
+        ora_ffi.register_parameter
+        ora_ffi.register_return
+
+--------------------------------------------------------------------------- 
+Q. How would you call a report from within forms?
+ 
+A. use the run_product function:
+
+   run_product(REPORTS, 'report_name', ... );
+
+--------------------------------------------------------------------------- 
+Q. What is wrong with the following piece of code?
+ 
+    <PRE-BLOCK>trigger code for BLOCK1
+    DECLARE    
+        logno NUMBER(9);            <-- the logname is not declared
+    BEGIN
+        SELECT logno INTO :logno
+        FROM logon
+        WHERE logname + 'KERI'; <-- should be: where logname = 'KERI';  
+ 
+        :BLOCK1.logname ;= logname; <-- should be:
+                                         :BLOCK1.logname :=logname;   
+                    <-- the variable logname is not set
+        :BLOCK2.logno ;= logno;     <-- should be: :BLOCK2.logno := logno;   
+ 
+        GO_BLOCK('BLOCK2');         <-- not allowed in a pre-block trigger
+    END;    
+ 
+--------------------------------------------------------------------------- 
+Q. What are packages? What are the advantages of packages?
+ 
+A. Packages are a collection of functions, procedures, cursors,
+   variables, ...
+
+   Advantages:
+   - Bundle common functionality.
+   - Information hiding.
+   - Limit the access to database objects 
+     (eg only privileges on the package but not on the table).
+
+
+--------------------------------------------------------------------------- 
+T. The following questions relate to the PL/SQL block:
+ 
+    CREATE OR REPLACE FUNCTION f_test(
+        n_param1      number,
+        n_param2      number) RETURN NUMBER IS
+ 
+        v_fund_name    varchar2(40);
+    BEGIN
+        SELECT fund_name
+        INTO v_fund_name
+        FROM funds
+        WHERE fund_id = n_param1
+        OR fund_id = n_param2;
+ 
+        RETURN 1;
+    END;
+
+
+Q1. What exceptions could be raised?
+ 
+A1. - When no_data_found
+    - When others
+
+Q2. How would you trap these exceptions?
+
+A2. At the end of the Pl/SQL block.
+ 
+Q3. How could it be improved?
+ 
+A3. Use a cursor (with Declare, Open, Fetch and Close cursor) instead of
+    the select statement and check cursor%NOTFOUND.
+    A fetch on a cursor is more efficient because it hits the database
+    only once. A select statement hits the database twice.
+
+--------------------------------------------------------------------------- 
+
+xxx
+=========
+ Reports
+=========
+
+--------------------------------------------------------------------------- 
+Q. Name the executable Oracle supply to convert a report definition 
+   from one format to another.
+
+A. R25CONV(M), the 'M' being applicable if the Motif version is in use
+
+--------------------------------------------------------------------------- 
+Q. Name the first global report trigger to fire when a report is 
+   executed.
+
+A. Before-Form
+
+--------------------------------------------------------------------------- 
+Q. Where can PL*SQL be best used to restrict the records retrieved by 
+   a group?
+
+A. Use a conditional group filter in the group definition.
+
+--------------------------------------------------------------------------- 
+Q. In case of a simple master/detail report, what is the simplest way 
+   to try to ensure hat all the details and the master appear on the 
+   same page?
+
+A. Select "page protect" on the master repeating frame
+
+--------------------------------------------------------------------------- 
+Q. What is the simplest way to ensure that each instance of a repeating 
+   frame appears on its own page?
+
+A. Set "maximum records per page" to 1 on the repeating frame property 
+   sheet.
+
+--------------------------------------------------------------------------- 
+Q. What is meant by an anchor being horizontally or vertically collapible?
+
+A. This means that if the parent object does not exist, the anchor has 
+   zero length. Therefore blank space can be avoided.
+
+--------------------------------------------------------------------------- 
+Q. What is the simplest way to run a report from a report?
+
+A. Use the SRW package procedure SRW.RUN_REPORT.
+
+--------------------------------------------------------------------------- 
+Q. How do you perform data definition language (e.g. create a temporary 
+   table) from a report?
+
+A.  Use the SRW package procedure SRW.DO_SQL 
+    ( syntax: srw.do_sql('create table ...') )
+
+--------------------------------------------------------------------------- 
+Q. What is the Oracle Reports server?
+
+A. It is a background process which handles requests for reports from 
+   forms. It cuts overheads and provides a window showing the status of 
+   the reports.
+
+--------------------------------------------------------------------------- 
+Q. What is meant by Flex Mode?
+
+A. In Flex Mode when an object is moved or resized the objects around it 
+   (it's parent objects) are automatically moved or resized.
+
+--------------------------------------------------------------------------- 
+Q. How would you try to improve the performance of reports?
+
+A. - Reduce the number of queries
+   - Use one query and breaks instead of a master and a detail query
+   - Use SQL instead of PL*SQL
+   - Use the where conditions in the SQL statement instead of group 
+     filters
+   - Perform calculations in the SQL statement instead of using formulas
+   - Remove unused frames (the default layout puts frames around 
+     everything)
+
+--------------------------------------------------------------------------- 
+Q. What ways do you have to create a report layout?
+
+A. - Use an default layout of Oracle Reports
+   - Create a user layout
+
+--------------------------------------------------------------------------- 
+Q. How can you stop/abort a report?
+
+A. Raise the program abort exception:
+   RAISE srw.program_abort
+
+--------------------------------------------------------------------------- 
+
+xxx
+======
+ Unix
+======
+
+--------------------------------------------------------------------------- 
+Q. How do you check if there is space left in a file system?
+
+A. Use df or du.
+
+--------------------------------------------------------------------------- 
+Q. How can you check how many SQL*Net users are logged in to the
+   Unix system?
+
+A. ps -ef | grep oracle<SID> | wc -l
+
+--------------------------------------------------------------------------- 
+Q. Can you remove an open file on Unix?
+
+A. Yes.
+
+--------------------------------------------------------------------------- 
+Q. What is an inode?
+
+A. An inode is a file status indicator. It is stored in both disk and
+   memory. There is one inode for each file on the system.
+
+--------------------------------------------------------------------------- 
+Q. What is redirection?
+
+A. Redirect the output of one process to the input of an other.
+   Use symbols "|", ">" and the tee command.
+
+--------------------------------------------------------------------------- 
+Q. How can you find dead processes?
+
+A. "ps -ef | grep zombie" or "who -d" depending on the system.
+
+--------------------------------------------------------------------------- 
+
+# vim: tw=75

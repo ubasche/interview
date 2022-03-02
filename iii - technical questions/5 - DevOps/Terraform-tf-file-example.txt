@@ -1,0 +1,36 @@
+
+main.tf
+>>>>>
+provider "aws" {
+  profile = "dev"
+  region  = "eu-west-2"
+}
+
+terraform {
+  backend "s3" {
+    bucket         = "sx.dev.terraform"
+    profile        = "dev"
+    key            = "environment/dev29.tfstate"
+    region         = "eu-west-2"
+    dynamodb_table = "terraform_state_lock"
+  }
+  required_version = "0.12.25"
+}
+
+variable "adm_user" {
+  type = string
+}
+
+variable "ansible_dir" {
+  type = string
+}
+
+module "environment" {
+  source             = "../../modules/fulldev"
+  environment_name   = "dev29"
+  environment_index  = 29
+  adm_user           = var.adm_user
+  aws_profile        = "dev"
+  oracle_ip          = "10.20.18.7"
+}
+<<<<<

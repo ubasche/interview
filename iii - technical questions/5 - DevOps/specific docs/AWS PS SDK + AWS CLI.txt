@@ -1,0 +1,81 @@
+
+AWS CLI
+=======
+
+Used aws-adfs to connect to AWS
+
+  -- Connect to Linux hosts
+    mssh -u <profile> [user@]<instnace_id>
+
+  -- File transfer
+    msftp -u <profile> [user@]<instnace_id>
+
+
+# List EC2 instances
+
+aws ec2 describe-instances
+aws ec2 describe-instances --profile user1
+    
+  ~~ List Instances
+    aws ec2 describe-instances
+    aws ec2 describe-instances --output json
+	aws ec2 describe-instances --query 'Reservations[].Instances[].[Placement.AvailabilityZone,InstanceId]' --output table
+	
+  ~~ List Instances by name	
+	aws ec2 describe-instances --filters Name=tag-value,Values=db.dev15.spx --output json
+	
+  ~~ Start/stop
+    aws ec2 start-instances --instance-ids i-dddddd70
+    aws ec2 stop-instances --instance-ids i-5c8282ed
+    aws ec2 reboot-instances --instance-ids i-dddddd70 
+  
+  -- Delete an instance
+    aws ec2 terminate-instances --dry-run --instance-ids i-dddddd70
+
+	
+  -- Launch (create) an instance using an AMI
+    aws ec2 run-instances --dry-run --image-id ami-08111162 --count 1 --instance-type t1.micro --key-name MyKeyPair --security-groups my-ami-security-group
+	
+	
+  -- Modify an instance
+    aws ec2 modify-instance-attribute --instance-id i-44a44ac3 --instance-type "{\"Value\": \"m1.small\"}"
+    aws ec2 modify-instance-attribute --instance-id i-44a44ac3 --disable-api-termination
+
+
+
+AWS Powershell SDK
+==================
+
+
+# Launch new EC2 instance  
+
+$Reservations = (New-EC2Instance -ImageId $ImageId -KeyName $KeyName `
+  -InstanceType $InstanceType -SubnetId $SubnetId `
+  -BlockDeviceMapping $DeviceMapping1,$DeviceMapping2 `
+  -InstanceProfile_Name $IamRoleName -TagSpecification $tagspec1,$tagspec2 `
+  -UserDataFile $UserDataFileLS -EncodeUserData `
+  )  
+  
+
+# Check if a snapshot exists
+
+$SnapshotFound=$(Get-EC2Snapshot -SnapshotId $AWSSnapshotID)
+
+if (! $SnapshotFound ) {
+    Write-LogFile -Text ("[ERROR] {0}" -f "Snapshot $AWSSnapshotID not found. Aborting.") -Filepath $Logfile
+    exit 1
+}
+
+
+# Check if a volume with the specified label exists
+
+$OldVolumeId=(Get-EC2Volume -Filter @{ Name="attachment.instance-id"; Values=$AWSInstanceID})|%{
+        if ($_.Tags.Value -eq $NewDiskLabel){        
+            $_.VolumeId
+        }
+    }
+
+    
+# Create a new EC2Volume
+    
+$NewVolume=New-EC2Volume -SnapshotId $AWSSnapshotID -Size $VolumeSize -AvailabilityZone $AZone -VolumeType gp2 -ErrorAction Stop    

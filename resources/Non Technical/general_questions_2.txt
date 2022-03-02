@@ -1,0 +1,66 @@
+
+General Interview Questions (Interviewer)
+===========================
+
+- Tell us about yourself/ your background. 
+- What motivates you to do a good job? 
+- What qualities do you think are essential to be successful in 
+  this kind of work? 
+- What courses did you attend? What job certifications do you hold? 
+- What subjects/courses did you excel in? Why? 
+- What subjects/courses gave you trouble? Why? 
+- How does your previous work experience prepare you for this position? 
+- How do you define 'success'? 
+- What has been your most significant accomplishment to date? 
+- Share an incident when you failed in an endeavor. 
+- Tell us about a problem you encountered in your work.  How did 
+  you handle it? 
+- Describe the 'ideal' job... the 'ideal' supervisor. 
+- What leadership roles have you held? 
+- What prejudices do you hold? 
+- What do you like to do in your spare time? 
+- What are your long-range career goals? 
+- How does this position match your career goals? 
+- In what areas do you feel you need further education and 
+  training to be successful? 
+- What do you know about our company? 
+- Why do you want to work for this company. Why should we hire you? 
+- Where do you see yourself fitting in to this organization 
+  . . .initially? . . .in 5 years? 
+- Why are you looking for a new job? 
+- How do you feel about re-locating? 
+- Are you willing to travel? 
+- What are your salary requirements? 
+- When would you be available to start if you were selected? 
+
+
+Work with the CV
+
+- Mark all interesting things on the CV before the interview.
+- Write the CV specific questions on the CV next to the related 
+  sentence in the CV.
+- Calculate the length of the previous jobs and write it on the
+  CV.
+
+
+Questions towards the CV
+
+- How did the upgrad from Oracle 7 to 8i go? Any problems?
+- What are your experiences with RMAN?
+- What kind of company is 'name of company'?
+- You stayed only 3 month at 'company'. Why did you leave?
+
+
+
+General Interview Questions (Candidate)
+===========================
+
+- Do you have a training program for each employee?
+- What projects are comming up?
+- What technologies are used by the company?
+- How big is the team / development department?
+- How are the working time arangements?
+- What will my place / responcibilities in the team be?
+- What is you personal point of view why I should join the company?
+  When you buy a suit, they alway tell you it looks nice.
+

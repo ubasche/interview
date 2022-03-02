@@ -1,0 +1,516 @@
+<<< Terraform youtube.txt >>>
+
+
+https://www.youtube.com/watch?v=SLB_c_ayRMo
+
+
+
+      0 to 1:09:50 - Terraform introduction
+1:09:50 to 1:50:00 - Project: Create EC2 instance VPC, IP-Address and Web server.
+1:50:00 to         - Extra Terraform Commands
+
+
+Terraform
+=========
+
+Documentation
+  https://www.terraform.io/docs/
+
+  
+  https://www.terraform.io/docs/providers.index.html
+
+  Browse providers
+    https://registry.terraform.io/browse/providers
+
+  Terraform AWS docu
+    https://www.terraform.io/docs/providers/aws
+    https://registry.terraform.io/providers/hashicorp/aws/latest/docs
+
+    You can also do a google search, e.g. for subnet:
+      "terraform aws subnet"
+      
+    
+    
+  AWS Console
+    https://aws.amazon.com/console/
+    
+
+Install Terraform
+  1. Create an AWS account (gmail)
+  2. Install terraform
+  3. Install Visual Studio Code
+  4. Install the "HashiCorp Terraform" extension for Visual Studio Code
+       - Click the "blocks" icon
+       - Type "terraform" and hit return
+
+       Useful extensions
+         - Atom One Dark Theme (by Mahmoud Ali)
+         - HashiCorp Terraform
+         - Docker (by Microsoft)
+         - Remote - Containers (by Microsoft)
+
+  I recommend for VSCode to just installing the 
+    YAML(maintained by Red Hat), and Jinja extensions 
+  and you will have most of what you need for ansible editing
+
+                  
+                  
+Terraform is using a declarative language for the code. It describes how the infrastructure shoul look like.
+
+
+
+Create a main.tf file
+---------------------
+
+>>>>>
+# Provider
+provider "aws" {
+  region  = "us-east-1"
+  access_key = "AKIAJ2D7PDJASDSWEXNA"
+  secret_key = "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"
+}
+
+# EC2 Instance
+resource "aws_instance" "first-server" {    <== "first-server" is the terraform name
+  ami = "ami-0885b1f6bd170450c"
+  instance_type = "t2.micro"
+
+  tags = {
+    "Name" = "ubuntu"
+  }
+}
+
+# VPC
+resource "aws_vpc" "first-vpc" {
+  cidr_block = "10.0.0.0/16"
+
+  tags = {
+    "Name" = "production"
+  }
+}
+
+# Subnet
+resource "aws_subnet" "subnet-1" {
+  vpc_id     = aws_vpc.first-vpc.id       <== Reference to another resource
+  cidr_block = "10.0.1.0/24"
+
+  tags = {
+    Name = "prod-subnet"
+  }
+}
+<<<<<
+
+
+
+
+
+To get the AWS access keys:
+  -> Click on your account name (top right)
+  -> My Security Credentials
+  -> Access keys
+     -> Create New Access key
+     -> Show Access Key
+     -> Copy and paste the keys
+
+
+VSC 
+  - Terminal -> New Terminal
+    $ terraform init
+        - Created .terraform folder 
+        - Installs all neccessary plugins (e.g. for aws)
+    $ terraform plan
+    $ terraform apply
+    $ terraform apply --auto-approve
+        
+    $ terraform destroy
+    
+    
+Terraform state file
+  terraform.tfstate
+  This file holds info about all resources.
+      
+    
+VPC = Virtual Private Cloud
+  -> Subnet
+
+
+
+
+Project: Create EC2 instance VPC, IP-Address and Web server
+-----------------------------------------------------------
+
+Steps:
+  0. Create a Key pair (using the AWS console)
+  
+  1. Create VPC
+  2. Create Internet Gateway
+  3. Create Custom Route Table
+  4. Create a Subnet
+  5. Associat Subnet with Route Table
+  6. Create Security Group to allow port 22,80,443
+  7. Create a network interface with an elastic IP in the subnet that was created in step 4
+  8. Assign an elastic IP to the network interface created in step 7
+  9. Create Ubuntu server and install/enable apache2
+
+
+Create a Key pair (using the AWS console)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  AWS Console -> EC2 -> Network & Security -> Key Pairs
+    -> Create Key Pair
+        Name: "Main-Key"
+        File format
+          (x) pem     for openssh
+          ( ) ppk     for Putty
+
+
+Create the terraform tf file
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+main.tf
+>>>>>
+# Configure the AWS Provider
+provider "aws" {
+  region  = "us-east-1"
+  access_key = "AKIAJ2D7PDJASDSWEXNA"
+  secret_key = "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"
+}
+
+# 1. Create VPC
+# 2. Create Internet Gateway
+# 3. Create Custom Route Table
+# 4. Create a Subnet
+# 5. Associat Subnet with Route Table
+# 6. Create Security Group to allow port 22,80,443
+# 7. Create a network interface with an IP in the subnet that was created in step 4
+# 8. Assign an elastic IP to the network interface created in step 7
+# 9. Create Ubuntu server and install/enable apache2
+
+
+# 1. Create VPC
+resource "aws_vpc" "prod-vpc" {
+  cidr_block = "10.0.0.0/16"
+
+  tags = {
+    "Name" = "prod-vpc"
+  }
+}
+
+# 2. Create Internet Gateway
+resource "aws_internet_gateway" "gw" {
+  vpc_id = aws_vpc.prod-vpc.id
+
+  tags = {
+    Name = "prod-gateway"
+  }
+}
+
+# 3. Create Custom Route Table
+resource "aws_route_table" "prod-route-table" {
+  vpc_id = aws_vpc.prod-vpc.id
+
+  # Default route. It sends all trafic to the gateway.
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.gw.id
+  }
+
+  # IVP6 default route. It sends all trafic to the gateway.
+  route {
+    ipv6_cidr_block        = "::/0"
+    gateway_id = aws_internet_gateway.gw.id
+  }
+
+  tags = {
+    Name = "prod-route-table"
+  }
+}
+
+# 4. Create a Subnet
+resource "aws_subnet" "subnet-1" {
+  vpc_id     = aws_vpc.prod-vpc.id
+  cidr_block = "10.0.1.0/24"
+  availability_zone = "us-east-1a"
+
+  tags = {
+    Name = "prod-subnet"
+  }
+}
+
+# 5. Associat Subnet with Route Table
+resource "aws_route_table_association" "a" {
+  subnet_id      = aws_subnet.subnet-1.id
+  route_table_id = aws_route_table.prod-route-table.id
+}
+
+# 6. Create Security Group to allow port 22,80,443
+resource "aws_security_group" "allow_web" {
+  name        = "allow_web_traffic"
+  description = "Allow TLS inbound traffic"
+  vpc_id      = aws_vpc.prod-vpc.id
+
+  ingress {
+    description = "HTTPS"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "HTTP"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "SSH"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "allow_web"
+  }
+}
+
+# 7. Create a network interface with an IP in the subnet that was created in step 4
+resource "aws_network_interface" "web-server-nic" {
+  subnet_id       = aws_subnet.subnet-1.id
+  private_ips     = ["10.0.1.50"]
+  security_groups = [aws_security_group.allow_web.id]
+}
+
+# 8. Assign an elastic IP to the network interface created in step 7
+resource "aws_eip" "one" {
+  vpc                       = true
+  network_interface         = aws_network_interface.web-server-nic.id
+  associate_with_private_ip = "10.0.1.50"
+  depends_on = [ aws_internet_gateway.gw ]
+}
+
+# 9. Create Ubuntu server and install/enable apache2
+resource "aws_instance" "web-server-instance" {
+  ami = "ami-0885b1f6bd170450c"
+  instance_type = "t2.micro"
+  availability_zone = "us-east-1a"
+  key_name = "Main-Key"
+
+  network_interface {
+    device_index = 0
+    network_interface_id = aws_network_interface.web-server-nic.id
+  }
+
+  user_data = <<-EOF
+    #!/bin/bash
+    sudo apt update -y
+    sudo apt install apache2 -y
+    sudo systemctl start apache2
+    sudo bash -c "echo your very first web server > /var/www/html/index.html"
+    EOF
+
+  tags = {
+    "Name" = "web-server"
+  }
+
+}
+<<<<<
+
+
+Test the web site
+~~~~~~~~~~~~~~~~~
+
+  Web Browser -> URL: 52.7.15.87      (check EC2 instance in AWS console)
+  
+
+Connect to the web server
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  AWS Console -> EC2 -> Instances -> "your instance" -> Click ((Connect))
+
+    For SSH client:
+    
+      1. Open an SSH client.
+      2. Locate your private key file. The key used to launch this instance is Main-Key.pem
+      3. Run this command, if necessary, to ensure your key is not publicly viewable.
+        chmod 400 Main-Key.pem
+      4. Connect to your instance using its Public IP:
+        52.7.15.87
+
+   Example:
+     ssh -i "Main-Key.pem" ubuntu@52.7.15.87
+
+
+
+Extra Terraform Commands
+------------------------
+
+terraform                  # Show terraform commands
+terraform <command>        # Show help for the command (e.g. "terraform state"
+                             shows help for the "state" command)
+
+terraform state list              # Lists all resources
+terraform state show <resource>   # Show details of the resource
+
+
+Only run parts of the tf file
+-----------------------------
+  Delete a specific resource  
+    terrafrom destroy -target <resource>
+    terrafrom destroy -target aws_instance.web-server-instance
+
+  Create a specific resource
+    terrafrom apply -target <resource>
+
+
+Terraform apply - display outputs
+---------------------------------
+
+Get the possible values
+  terraform state list
+  terraform state show aws-eip.one
+
+Add the output code to your tf file
+  output "web-server-public-ip" {
+    value = aws_eip.one.public_ip
+  }
+
+Display the output by running any of the commands below
+  terraform output
+  terraform refresh
+  terraform apply        # !!! This may make changes !!!
+  
+  
+Terraform Variables
+-------------------
+
+# 1. Create VPC
+resource "aws_vpc" "prod-vpc" {
+  cidr_block = "10.0.0.0/16"
+
+  tags = {
+    "Name" = "prod-vpc"
+  }
+}
+
+# 4. Create a Subnet
+resource "aws_subnet" "subnet-1" {
+  vpc_id     = aws_vpc.prod-vpc.id
+  cidr_block = "10.0.1.0/24"
+  availability_zone = "us-east-1a"
+
+  tags = {
+    Name = "prod-subnet"
+  }
+}
+
+
+variable "subnet-prefix" {
+  description = "cidr block for the subnet"
+  default = "10.0.10.0/24"
+  #type = any
+  type = string
+}
+
+Note:
+  - All parameters for variables are optional.
+  - If the variable has now value, terraform will prompt for the variable.
+
+
+# 4. Create a Subnet
+resource "aws_subnet" "subnet-1" {
+  vpc_id     = aws_vpc.prod-vpc.id
+  cidr_block = var.subnet-prefix            <== use the variable
+  availability_zone = "us-east-1a"
+
+  tags = {
+    Name = "prod-subnet"
+  }
+}
+
+Running terrafrom with variables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+-- Get prompted for the variable value
+  terraform apply
+
+-- Pass in the variable on the command line
+  terraform apply -var "subnet-prefix=10.0.100.0/24"
+
+-- Use a file for the variables ( terraform.tfvars )
+  vi terraform.tfvars
+  
+  >>>>>
+  subnet-prefix = "10.0.100.0/24"
+  <<<<<
+
+  terraform apply                        # Read default va file terraform.tfvars
+  terraform apply -var-file <var-file>   # Use custom var file
+  
+-- Use environment variables
+  ???
+  
+
+Use lists of strings for variables
+----------------------------------
+
+-- Use a file for the variables ( terraform.tfvars )
+  vi terraform.tfvars
+  
+  >>>>>
+  subnet-prefix = [ "10.0.100.0/24", "10.0.10.0/24" ] 
+  <<<<<
+
+-- Reference the first element in the list variable
+
+resource "aws_subnet" "subnet-1" {
+  vpc_id     = aws_vpc.prod-vpc.id
+  cidr_block = var.subnet-prefix[0]           <== use the variable
+  availability_zone = "us-east-1a"
+
+  tags = {
+    Name = "prod-subnet"
+  }
+}
+
+
+Use list of objects for variables
+---------------------------------
+
+-- Use a file for the variables ( terraform.tfvars )
+  vi terraform.tfvars
+  
+  >>>>>
+  subnet-prefix = [ {cidr_block = "10.0.100.0/24", name = "prod_subnet"},
+                    {cidr_block = "10.0.10.0/24", name = "dev_subnet"} ] 
+  <<<<<
+  
+  
+-- Reference the first element in the list variable
+
+resource "aws_subnet" "subnet-1" {
+  vpc_id     = aws_vpc.prod-vpc.id
+  cidr_block = var.subnet-prefix[0].cidr_block      <== use the variable
+  availability_zone = "us-east-1a"
+
+  tags = {
+    Name = var.subnet-prefix[0].name      <== use the variable
+  }
+}
+
+
+
+
+
+<<< EOF >>>

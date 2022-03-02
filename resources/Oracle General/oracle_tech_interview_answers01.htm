@@ -1,0 +1,663 @@
+<HTML>
+<HEAD>
+<TITLE>DBAsupport.com : Oracle 9i Central : Oracle Technical Interview Questions Answered</TITLE>
+
+<LINK REL="stylesheet" HREF="/style.css" TYPE="text/css">
+
+</head>
+
+<body marginwidth="0" leftmargin="0" rightmargin="0" bgcolor="ffffff">
+<!--OLD_include virtual="/icom_includes/special/cdxpo/cdxpo-ribbon.txt"-->
+
+
+<!--
+James Koopmann responds to readers by providing answers to the questions raised in his popular article 'Technical Interview Questions.'
+-->
+
+<font face = "arial, helvetica" size = 3>
+<h2>Oracle Technical Interview Questions Answered
+<br><font face = "arial, helvetica" size = 3>
+James Koopmann, <a href = "mailto:jkoopmann@qwest.net">jkoopmann@qwest.net</a></font>
+</h2>
+
+
+<p>
+<br>
+<font face = "arial, helvetica" size = 3>
+
+<!-- content_start -->
+
+
+<p>The interview process can be quite stressful. Here is the first
+part of a two part series on helping you answer those tough questions that you
+might experience in your quest for an Oracle DBA position.</p>
+
+
+
+<p>Ever
+since I wrote the past article on the Oracle Technical Interview, I have been
+bombarded with e-mails asking for help on getting through the interview
+questions that I presented. Most of you I have answered, others I was reluctant
+to post all of the answers so that you could begin your own quest for the
+answers. Now, however, I have decided to post the answers knowing that we can
+all benefit from them. If there are any questions here that you still need
+clarification on, please e-mail me and I will do my best to further explain the
+answer I have given. Please remember that as you go through the article, it is
+not enough to know the answer to a particular question, you must try and put
+yourself in an interview situation and experience answering the question for
+yourself. Therefore, after you have gone through the questions and answers read
+the question yourself and then answer it with your own words. As always, good
+luck, and cheers.</p>
+
+<hr>
+
+<h3>Personal</h3>
+
+<p>This part of the interview question is not to be regarded as
+insignificant. If the interviewer asks you these questions take it as a sign
+that they are interested in you, your qualities, and how you interact with
+people throughout the day. Take it as an opportunity to prove that you have
+been around the block a few times, are willing to work with other people, and
+enjoy the job you do. Many times people see DBA types as stuffy and pointed,
+not willing to work with others, and only concerned with the database and its day-to-day
+operational needs. Put aside the needs of the database and talk about how you
+work with people and the different departments in the organization and are
+concerned with providing them with top notch database services.</p>
+
+<div style="margin: 20px;"><p><strong>1.&nbsp;&nbsp;&nbsp;&nbsp;
+</strong><strong>What
+DBA activities did you to do today? </strong></p>
+
+<p>Wow, this is a loaded question and almost begs for you to
+answer it with &quot;What DBA activities do you LIKE to do on a daily basis?.&quot;
+ And that is how I would answer this question. Again, do not get caught up in
+the &quot;typical&quot; day-to-day operational issues of database
+administration. Sure, you can talk about the index you rebuilt, the monitoring
+of system and session waits that were occurring, or the space you added to a
+data file, these are all good and great and you should convey that you
+understand the day-to-day operational issues. What you should also throw into
+this answer are the meetings that you attend to provide direction in the
+database arena, the people that you meet and talk with daily to answer adhoc
+questions about database use, the modeling of business needs within the
+database, and the extra time you spend early in the morning or late at night to
+get the job done. Just because the question stipulates &quot;today&quot; do not
+take &quot;today&quot; to mean &quot;today.&quot; Make sure you wrap up a few
+good days into &quot;today&quot; and talk about them. This question also begs you
+to ask the question of &quot;What typical DBA activities are performed day to
+day within X Corporation?&quot;</p>
+
+<p><strong>2.&nbsp;&nbsp;&nbsp;&nbsp;
+</strong><strong>What is
+your typical day like? </strong></p>
+
+<p>If you spend enough time on question 1, this question will
+never be asked. It is really a continuation of question 1 to try and get you to
+open up and talk about the type of things you like to do. Personally, I would
+continue with the theme of question 1 if you are cut short or this question is asked
+later in the interview process. Just note that this question is not all geared
+toward the day-to-day operational issues you experience as a DBA. This question
+also gives you the opportunity to see if they want to know about you as an
+individual. Since the question did not stipulate &quot;on the job&quot; I would
+throw in a few items like, I get up at 5:00am to get into work and get some quiet time to read up on new trends or
+you help coach your son/daughter's soccer team. Just test the waters to what is
+acceptable. If the interviewer starts to pull you back to &quot;job&quot;
+related issues, do not go to personal. Also, if you go to the office of the
+interviewer please notice the surroundings, if there are pictures of his/her
+family, it is probably a good idea to venture down the personal path. If there
+is a fly-fishing picture on the wall, do not say you like deep-sea fishing. You
+get the picture.</p>
+
+<p><strong>3.&nbsp;&nbsp;&nbsp;&nbsp;
+</strong><strong>What
+other parts of your organization do you interact with and how? </strong></p>
+
+<p>Again, if you have exhausted question 1 and 2 you may
+never get to this question. But if you have been apprehensive to opening up and
+explaining yourself, take note that you may have an issue and the interviewer
+might also be already getting tired of the interview process. If you get to
+this question consider yourself in trouble. You really need to forget all your
+hang-ups and start explaining what it is that you like to do as a DBA, and why
+you want to work for this particular company. You are going to have to reel
+this interviewer back into the interview process or you might not get to the
+true technical question part of the interview.</p>
+
+<p><strong>4.&nbsp;&nbsp;&nbsp;&nbsp;
+</strong><strong>Do you
+consider yourself a development DBA or a production DBA and why? </strong></p>
+
+<p>I take this as a trick question and explain it that way.
+Never in my database carrier have I distinguished between &quot;development&quot;
+and &quot;production.&quot; Just ask your development staff or VP of
+engineering how much time and money is lost if development systems are down.
+Explain to the interviewer that both systems are equally important to the
+operation of the company and both should be considered as production systems
+because there are people relying on them and money is lost if either one of
+them is down. Ok you may be saying, and I know you are, that we lose more money
+if the production system is down. Ok, convey that to the interviewer and you won't
+get anyone to disagree with you unless your company sells software or there are
+million dollar deals on the table that are expecting the next release of your
+product or service.</p>
+
+<p><strong>5.&nbsp;&nbsp;&nbsp;&nbsp;
+</strong><strong>Are you
+a nuts-n-bolts DBA or a tools-n-props DBA </strong></p>
+
+<p>This question begs for me to give definition around the
+terms I basically group DBAs into. These are not good or bad groups but something
+I like to think about when talking to DBAs. A nuts-n-bolts DBA is the type that
+likes to figure out every little item about how the database works. He/she is a
+DBA who typically hates a GUI environment and prefers the command line to
+execute commands and accomplish tasks. A nuts-n-bolts DBA like to feel in
+control of the database and only feels comfortable at the command line and vi
+as an editor. The tools-n-props DBA is mostly the opposite of a nuts-n-bolts
+DBA, they like the feel of a GUI, the ease at which things can be accomplished
+without knowing much about the database. They want to get the job done with the
+least amount of intervention from having to figure out what everything is doing
+behind the scenes. Now the answer, I would explain myself as a combination of
+the two. I, having been in this business for over 20 years, have grown up in a
+command line era where the GUIs never seemed to work. There was high complexity
+in systems and not much good documentation on how things worked. Thus, I had to
+learn everything about most aspects of the database environment I was working
+in and thus became a nuts-n-bolts DBA. I was a true command line and vi bigot.
+Times have changed and the GUIs are very reliable, understand the environment
+they are installed on, and can generally get the job done quicker for
+individuals new to database administration. I too am slowly slipping over to
+the dark side of GUI administration. If you find
+yourself as a tools-n-props DBA, try to convey that you are aware of some tasks
+that require you to be a nuts-n-bolts DBA. </p>
+</div>
+
+
+<hr>
+
+<h3>Technical – Oracle</h3>
+
+<p>This is the part you have all been waiting on. Please if you
+have just skipped to this section, go back to the personal section and read it.
+There is much to be gained by the personal section and conveying to your
+interviewer who you are and how you tick from day to day. Also, the answers I
+am giving here are off the cuff and are not intended to be the definitive
+answer to these questions. There are many aspects to these questions that just cannot
+be answered here and honestly, you will not have time to explain any of these
+questions fully in the interview process. It is up to you to make sure your
+interviewer understands that you understand the question and have given enough
+information that they know you understand the concept.</p>
+
+<div style="margin: 20px;"><p><strong>1.&nbsp;&nbsp;&nbsp;&nbsp;
+</strong><strong>Explain
+the difference between a hot backup and a cold backup and the benefits associated
+with each. </strong></p>
+
+<p>A hot backup is basically taking a backup of the database
+while it is still up and running and it must be in archive log mode. A cold
+backup is taking a backup of the database while it is shut down and does not
+require being in archive log mode. The benefit of taking a hot backup is that
+the database is still available for use while the backup is occurring and you
+can recover the database to any point in time. The benefit of taking a cold
+backup is that it is typically easier to administer the backup and recovery
+process. In addition, since you are taking cold backups the database does not
+require being in archive log mode and thus there will be a slight performance
+gain as the database is not cutting archive logs to disk.</p>
+
+<p><strong>2.&nbsp;&nbsp;&nbsp;&nbsp;
+</strong><strong>You
+have just had to restore from backup and do not have any control files. How
+would you go about bringing up this database? </strong></p>
+
+<p>I would create a text based backup control file,
+stipulating where on disk all the data files where and then issue the recover command
+with the using backup control file clause.</p>
+
+<p><strong>3.&nbsp;&nbsp;&nbsp;&nbsp;
+</strong><strong>How do
+you switch from an init.ora file to a spfile? </strong></p>
+
+<p>Issue the create spfile from pfile command.</p>
+
+<p><strong>4.&nbsp;&nbsp;&nbsp;&nbsp;
+</strong><strong>Explain
+the difference between a data block, an extent and a segment. </strong></p>
+
+<p>A data block is the smallest unit of logical storage for a
+database object. As objects grow they take chunks of additional storage that
+are composed of contiguous data blocks. These groupings of contiguous data
+blocks are called extents. All the extents that an object takes when grouped together
+are considered the segment of the database object.</p>
+
+<p><strong>5.&nbsp;&nbsp;&nbsp;&nbsp;
+</strong><strong>Give
+two examples of how you might determine the structure of the table DEPT. </strong></p>
+
+<p>Use the describe command or use the dbms_metadata.get_ddl
+package.</p>
+
+<p><strong>6.&nbsp;&nbsp;&nbsp;&nbsp;
+</strong><strong>Where
+would you look for errors from the database engine? </strong></p>
+
+<p>In the alert log.</p>
+
+<p><strong>7.&nbsp;&nbsp;&nbsp;&nbsp;
+</strong><strong>Compare
+and contrast TRUNCATE and DELETE for a table. </strong></p>
+
+<p>Both the truncate and delete command have the desired
+outcome of getting rid of all the rows in a table. The difference between the
+two is that the truncate command is a DDL operation and just moves the high
+water mark and produces a now rollback. The delete command, on the other hand,
+is a DML operation, which will produce a rollback and thus take longer to
+complete.</p>
+
+<p><strong>8.&nbsp;&nbsp;&nbsp;&nbsp;
+</strong><strong>Give
+the reasoning behind using an index. </strong></p>
+
+<p>Faster access to data blocks in a table.</p>
+
+<p><strong>9.&nbsp;&nbsp;&nbsp;&nbsp;
+</strong><strong>Give
+the two types of tables involved in producing a star schema and the type of
+data they hold. </strong></p>
+
+<p>Fact tables and dimension tables. A fact table contains
+measurements while dimension tables will contain data that will help describe
+the fact tables.</p>
+
+<p><strong>10.
+</strong><strong>. What
+type of index should you use on a fact table? </strong></p>
+
+<p>A Bitmap index.</p>
+
+<p><strong>11.
+</strong><strong> Give
+two examples of referential integrity constraints. </strong></p>
+
+<p>A primary key and a foreign key.</p>
+
+<p><strong>12.
+</strong><strong>A table
+is classified as a parent table and you want to drop and re-create it. How
+would you do this without affecting the children tables? </strong></p>
+
+<p>Disable the foreign key constraint to the parent, drop the
+table, re-create the table, enable the foreign key constraint.</p>
+
+<p><strong>13.
+</strong><strong>Explain
+the difference between ARCHIVELOG mode and NOARCHIVELOG mode and the benefits
+and disadvantages to each. </strong></p>
+
+<p>ARCHIVELOG mode is a mode that you can put the database in
+for creating a backup of all transactions that have occurred in the database so
+that you can recover to any point in time. NOARCHIVELOG mode is basically the
+absence of ARCHIVELOG mode and has the disadvantage of not being able to
+recover to any point in time. NOARCHIVELOG mode does have the advantage of not
+having to write transactions to an archive log and thus increases the performance
+of the database slightly.</p>
+
+<p><strong>14.
+</strong><strong>What
+command would you use to create a backup control file? </strong></p>
+
+<p>Alter database backup control file to trace.</p>
+
+<p><strong>15.
+</strong><strong>Give
+the stages of instance startup to a usable state where normal users may access
+it. </strong></p>
+
+<p>STARTUP NOMOUNT       - Instance startup</p>
+
+<p>STARTUP MOUNT           - The database is mounted</p>
+
+<p>STARTUP OPEN             - The database is opened</p>
+
+<p><strong>16.
+</strong><strong>What
+column differentiates the V$ views to the GV$ views and how? </strong></p>
+
+<p>The INST_ID column which indicates the instance in a RAC
+environment the information came from.</p>
+
+<p><strong>17.
+</strong><strong>How
+would you go about generating an EXPLAIN plan? </strong></p>
+
+<p>Create a plan table with utlxplan.sql. </p>
+
+<p>Use the explain plan set statement_id = 'tst1' into plan_table
+for a SQL statement</p>
+
+<p>Look at the explain plan with utlxplp.sql or utlxpls.sql</p>
+
+<p><strong>18.
+</strong><strong>How
+would you go about increasing the buffer cache hit ratio? </strong></p>
+
+<p>Use the buffer cache advisory over a given workload and
+then query the v$db_cache_advice table. If a change was necessary then I would
+use the alter system set db_cache_size command.</p>
+
+<p><strong>19.
+</strong><strong>Explain
+an ORA-01555 </strong></p>
+
+<p>You get this error when you get a snapshot too old within
+rollback. It can usually be solved by increasing the undo retention or
+increasing the size of rollbacks. You should also look at the logic involved in
+the application getting the error message.</p>
+
+<p><strong>20.
+</strong><strong>Explain
+the difference between $ORACLE_HOME and $ORACLE_BASE. </strong></p>
+
+<p>ORACLE_BASE is the root directory for oracle. ORACLE_HOME
+located beneath ORACLE_BASE is where the oracle products reside.</p>
+
+<p><strong>21.&nbsp; How would you
+determine the time zone under which a database was operating? </strong></p>
+
+<pre>select DBTIMEZONE from dual;</pre>
+
+<p><strong>22.&nbsp;
+Explain
+the use of setting GLOBAL_NAMES equal to TRUE. </strong></p>
+
+<p>Setting <strong>GLOBAL_NAMES</strong> dictates how you might connect to a database.
+This variable is either TRUE or FALSE and if it is set to TRUE it enforces
+database links to have the same name as the remote database to which they are
+linking.</p>
+
+<p><strong>23.&nbsp;
+What
+command would you use to encrypt a PL/SQL application? </strong></p>
+
+<p>WRAP</p>
+
+<p><strong>24.&nbsp;
+Explain
+the difference between a FUNCTION, PROCEDURE and PACKAGE. </strong></p>
+
+<p>A function and procedure are the same in that they are
+intended to be a collection of PL/SQL code that carries a single task. While a
+procedure does not have to return any values to the calling application, a
+function will return a single value. A package on the other hand is a
+collection of functions and procedures that are grouped together based on their
+commonality to a business function or application.</p>
+
+<p><strong>25.&nbsp;
+Explain
+the use of table functions. </strong></p>
+
+<p>Table functions are designed to return a set of rows
+through PL/SQL logic but are intended to be used as a normal table or view in a
+SQL statement. They are also used to pipeline information in an ETL process.</p>
+
+<p><strong>26.&nbsp;
+Name
+three advisory statistics you can collect. </strong></p>
+
+<p>Buffer Cache Advice, Segment Level Statistics, &amp; Timed
+Statistics</p>
+
+<p><strong>27.&nbsp;
+Where
+in the Oracle directory tree structure are audit traces placed? </strong></p>
+
+<p>In unix $ORACLE_HOME/rdbms/audit, in Windows the event
+viewer</p>
+
+<p><strong>28.&nbsp;
+Explain
+materialized views and how they are used. </strong></p>
+
+<p>Materialized views are objects that are reduced sets of
+information that have been summarized, grouped, or aggregated from base tables.
+They are typically used in data warehouse or decision support systems.</p>
+
+<p><strong>29.&nbsp;
+When a
+user process fails, what background process cleans up after it? </strong></p>
+
+<p>PMON</p>
+
+<p><strong>30.&nbsp;
+What
+background process refreshes materialized views? </strong></p>
+
+<p>The Job Queue Processes.</p>
+
+<p><strong>31.&nbsp;
+How
+would you determine what sessions are connected and what resources they are
+waiting for? </strong></p>
+
+<p>Use of V$SESSION and V$SESSION_WAIT</p>
+
+<p><strong>32.&nbsp;
+Describe
+what redo logs are. </strong></p>
+
+<p>Redo logs are logical and physical structures that are
+designed to hold all the changes made to a database and are intended to aid in
+the recovery of a database.</p>
+
+<p><strong>33.&nbsp;
+How
+would you force a log switch? </strong></p>
+
+<pre>ALTER SYSTEM SWITCH LOGFILE;</pre>
+
+<p><strong>34.&nbsp;
+Give
+two methods you could use to determine what DDL changes have been made. </strong></p>
+
+<p>You could use Logminer or Streams</p>
+
+<p><strong>35.&nbsp;
+What
+does coalescing a tablespace do? </strong></p>
+
+<p>Coalescing is only valid for dictionary-managed tablespaces
+and de-fragments space by combining neighboring free extents into large single
+extents.</p>
+
+<p><strong>36.&nbsp;
+What is
+the difference between a TEMPORARY tablespace and a PERMANENT tablespace? </strong></p>
+
+<p>A temporary tablespace is used for temporary objects such
+as sort structures while permanent tablespaces are used to store those objects
+meant to be used as the true objects of the database.</p>
+
+<p><strong>37.&nbsp;
+Name a
+tablespace automatically created when you create a database. </strong></p>
+
+<p>The SYSTEM tablespace.</p>
+
+<p><strong>38.&nbsp;
+When
+creating a user, what permissions must you grant to allow them to connect to
+the database? </strong></p>
+
+<p>Grant the CONNECT to the user.</p>
+
+<p><strong>39.&nbsp;
+How do
+you add a data file to a tablespace? </strong></p>
+
+<pre>ALTER TABLESPACE &lt;tablespace_name&gt; ADD DATAFILE &lt;datafile_name&gt; SIZE &lt;size&gt;</pre>
+
+<p><strong>40.&nbsp;
+How do
+you resize a data file? </strong></p>
+
+<pre>ALTER DATABASE DATAFILE &lt;datafile_name&gt; RESIZE &lt;new_size&gt;;</pre>
+
+<p><strong>41.&nbsp;
+What
+view would you use to look at the size of a data file? </strong></p>
+
+<pre>DBA_DATA_FILES</pre>
+
+<p><strong>42.&nbsp;
+What
+view would you use to determine free space in a tablespace? </strong></p>
+
+<pre>DBA_FREE_SPACE</pre>
+
+<p><strong>43.&nbsp;
+How
+would you determine who has added a row to a table? </strong></p>
+
+<p>Turn on fine grain auditing for the table.</p>
+
+<p><strong>44.&nbsp;
+How can
+you rebuild an index? </strong></p>
+
+<pre>ALTER INDEX &lt;index_name&gt; REBUILD;</pre>
+
+<p><strong>45.&nbsp;
+Explain
+what partitioning is and what its benefit is. </strong></p>
+
+<p>Partitioning is a method of taking large tables and
+indexes and splitting them into smaller, more manageable pieces.</p>
+
+<p><strong>46.&nbsp;
+You
+have just compiled a PL/SQL package but got errors, how would you view the
+errors? </strong></p>
+
+<pre>SHOW ERRORS</pre>
+
+<p><strong>47.&nbsp;
+How can
+you gather statistics on a table? </strong></p>
+
+<p>The ANALYZE command.</p>
+
+<p><strong>48.&nbsp;
+How can
+you enable a trace for a session? </strong></p>
+
+<p>Use the DBMS_SESSION.SET_SQL_TRACE or</p>
+
+<p>Use ALTER SESSION SET SQL_TRACE = TRUE;</p>
+
+<p><strong>49.&nbsp;
+What is
+the difference between the SQL*Loader and IMPORT utilities? </strong></p>
+
+<p>These two Oracle utilities are used for loading data into
+the database. The difference is that the import utility relies on the data
+being produced by another Oracle utility EXPORT while the SQL*Loader utility
+allows data to be loaded that has been produced by other utilities from
+different data sources just so long as it conforms to ASCII formatted or
+delimited files.</p>
+
+<p><strong>50.&nbsp;
+Name
+two files used for network connection to a database. </strong></p>
+
+<p>TNSNAMES.ORA and SQLNET.ORA</p>
+
+</div>
+
+<hr>
+
+<h3>Technical – UNIX</h3>
+
+<p>Every DBA should know something about the operating system
+that the database will be running on. The questions here are related to UNIX
+but you should equally be able to answer questions related to common Windows environments.
+</p>
+
+<div style="margin: 20px;"><p><strong>1.&nbsp;&nbsp;&nbsp;&nbsp;
+How do
+you list the files in an UNIX directory while also showing hidden files? </strong></p>
+
+<pre>ls -ltra</pre>
+
+<p><strong>2.&nbsp;
+How do
+you execute a UNIX command in the background? </strong></p>
+
+<p>Use the &quot;&amp;&quot; </p>
+
+<p><strong>3.&nbsp;
+What
+UNIX command will control the default file permissions when files are created? </strong></p>
+
+<p>Umask </p>
+
+<p><strong>4.&nbsp;
+Explain
+the read, write, and execute permissions on a UNIX directory. </strong></p>
+
+<p>Read allows you to see and list the directory contents.</p>
+
+<p>Write allows you to create, edit and delete files and
+subdirectories in the directory.</p>
+
+<p>Execute gives you the previous read/write permissions plus
+allows you to change into the directory and execute programs or shells from the
+directory.</p>
+
+<p><strong>5.&nbsp;
+the difference between a soft link and a hard link? </strong></p>
+
+<p>A symbolic (soft) linked file and the targeted file can be
+located on the same or different file system while for a hard link they must be
+located on the same file system.</p>
+
+<p><strong>6.&nbsp;
+Give
+the command to display space usage on the UNIX file system. </strong></p>
+
+<pre>df -lk</pre>
+
+<p><strong>7.&nbsp;
+Explain
+iostat, vmstat and netstat. </strong></p>
+
+<p>Iostat reports on terminal, disk and tape I/O activity.</p>
+
+<p>Vmstat reports on virtual memory statistics for processes,
+disk, tape and CPU activity.</p>
+
+<p>Netstat reports on the contents of network data
+structures.</p>
+
+<p><strong>8.&nbsp;
+How
+would you change all occurrences of a value using VI? </strong></p>
+
+<p>Use :<code>%s/&lt;old&gt;/&lt;new&gt;/g</code></p>
+
+<p><strong>9.&nbsp;
+Give
+two UNIX kernel parameters that effect an Oracle install </strong></p>
+
+<p>SHMMAX &amp; SHMMNI</p>
+
+<p><strong>10.&nbsp;
+Briefly,
+how do you install Oracle software on UNIX. </strong></p>
+
+<p>Basically, set up disks, kernel parameters, and run orainst.</p>
+
+</div>
+
+<!-- content_stop -->
+
+<br>
+<br>
+<br>
+
+</BODY>
+</HTML>   
+

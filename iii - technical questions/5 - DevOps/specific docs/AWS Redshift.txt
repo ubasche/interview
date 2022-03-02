@@ -1,0 +1,109 @@
+<<< AWS Redshift.txt >>>
+
+
+
+https://www.youtube.com/watch?v=fc5WPKnbam8
+
+
+
+AWS Redshift Database
+=====================
+
+1 Traditional Data Warehouse
+----------------------------
+
+  Data Sources (Operational databases and Exteranl sources)
+     |
+     V
+  Data Warehouse
+     |
+     V
+  OLTP Server 
+     |
+     V
+  Top Tier (Query Reports, Analytics, Data Mining, ...)
+  
+  
+  - Difficult to scale up or down
+  - Upgrading is difficult and time/resource needs
+  - Performance issues
+  
+
+2 Amazon Redshift - A to Z
+--------------------------
+
+  - Fast, scalable data warehouse
+  - Parallel, column-orientated
+  
+  - Collection of compute resources (nodes) that are organized into groups
+  - They become clusters
+  - Each cluster runs an Amazon Redshift engine and contains one or more databases
+  - The cluster has a leader node and one or more compute nodes
+  
+  - The leader node receives queries from client applications
+  - It develops an execution plan 
+  - It coordinates the parallel execution of these plans with one or more compute nodes
+  - When the computed nodes have finished the leader node aggreates the results from
+    all these nodes
+  - It then sends the result back to the client application
+  
+  - The compute nodes are further divided into node slices
+  
+  - Client appliactions use JDBC (Java) or ODBC (SQL) to connect to Redshift
+  
+  
+  Node Types
+    Dense Storage (DS)
+    Dense Compute (DC)
+    
+  Redshift
+    pros:
+      - Easy to set up
+      - Easy to scale
+      - Scale up: Increase the number of compute nodes
+      - Scale down: Decrease the number of compute nodes
+      - Columnar storage
+      - Parallel execution
+      - Cost effective
+      
+  Columnar storage
+    - Data is stored as columns
+      One block holds data of a column (e.g. student_name(1), student_name(2), ...)
+          
+  Traditional storage
+    - Data is stored as rows
+      One block hold all the data of a row (e.g. student_id, student_name, address, ...)
+      ==> All IDs are stored in the first block
+          All names are stored in the second block
+          ...
+    - Because a block contains similar data you get better data compression 
+      A block can hold about 3 times the amount of data compared to row storage
+      ==> You have fewer IO operations
+    
+    - Storing records for on field together the database can perform analysis on 
+      similar type of data far quicker than row storage
+    
+    - Data lake. s3 storage for Redshift to store data in raw format, e.g. csv, RCF file, ...)
+    
+    - Amazon Redshift spectrum (interface between Redshift and Data Lake
+      This enables you to directely query data stored in S3 (Data Lake) 
+      without having to move the data into Redshift.
+      
+    - Backups into S3
+    - Data encryption
+        
+
+3 Demo on Amazon Redshift
+-------------------------
+
+  1. Install SQL Drivers and Tools
+    - Install SQL Workbench/J
+    - Install JDBC driver
+    - Make sure you have Java Runtime enabled on your OS
+
+  2. Create a Redshift database
+      
+  3. Run SQL queries using the SQL Workbench    
+
+
+<<< EOF >>>

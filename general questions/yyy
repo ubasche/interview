@@ -1,0 +1,159 @@
+
+What do you do if a query is not working today?
+
+  This can be caused by many different things.
+
+  - Check for change in execution plan.
+  - Are other jobs/queries causing the bad performance?
+     Run AWR report.
+  - Has the data changed? Was there a data load last night?
+     Check num_rows and compare it to count(*).
+     Decide if the stats need to be gathered.
+  - Take a trace (level 12) to analyze the issue.
+  - Is there an IO problem on the system?
+  - Check the logswith count to find out if there is unusual
+    high activity.
+
+
+When do you increase or decrease the SGA?
+
+  Increase
+    High number of physical IOs.
+
+  Decrease
+    Too much swapping and paging.
+
+  --> Use the SGA advisors to find out what happens when you 
+      increase/decrease the SGA.
+
+      select sga_size,sga_size_factor,estd_db_time 
+      from v$sga_target_advice;
+
+
+
+When do you increase or decrease the PGA?
+
+  Increase
+    If the number of users increases.
+    High number of disk sorts.
+
+  Decrease
+    ?
+
+  --> Use the PGA advisors to find out what happens when you 
+      increase/decrease the SGA.
+
+      select pga_target_for_estimate,pga_target_factor,estd_extra_bytes_rw 
+      from v$pga_target_advice;
+
+
+Error "checkpoint not complete, cannot allocate new log", what do you do?
+
+  Oracle attempts to reuse a log file but the checkpoint that would flush 
+  the blocks that may have redo in this log file has not yet completed.
+
+  ==> Make sure there are sufficient log files for peak times.
+      Add additional log file or increase the current log sizes.
+
+
+How do you restore old stats for a table?
+
+  Check which statistics are available
+
+    > select count(*), stats_update_time
+      from dba_tab_stats_history  
+      where owner='SCHEMA1'
+      and table_name='TAB1'
+      group by stats_update_time;
+
+  Delete the current stats  
+
+    > exec DBMS_STATS.DELETE_TABLE_STATS(OWNNAME=>'SCHMEMA1', TABNAME=>'TAB1');
+
+  Restore an old statistics for the table:
+
+    > exec dbms_stats.restore_table_stats
+        (ownname=>'SCHEMA1',tabname=>'TAB1',
+         AS_OF_TIMESTAMP=>'22/02/11 10:20:07,587000 +01:00');
+
+
+What does the validate command in RMAN do?
+
+  Checks for corrupt blocks and missing files.
+  You can use validate to check whether backups can be restored.
+
+    backup ... validate
+    restore ... validate
+
+What does the crosscheck command in RMAN do?
+
+  Checks if the files in the RMAN catalog or control file are on disk.
+
+What is "library cache pin wait contention"?
+
+  It is caused by contention with the library cache, the area used 
+  to store SQL executables for re-use.
+
+  It occurs when the session tries to pin an object in the library 
+  cache to modify or examine it.
+
+  This can occur when PL/SQL code is compiled and it takes too long.
+  Check if the session is blocked. 
+  If there is general widespread waiting, the shared pool may need tuning.
+
+
+What are the parameters FAL_CLIENT and FAL_SERVER for?
+
+  FAL = Fetch Archvie Log
+
+  FAL_CLIENT and FAL_SERVER are initialization parameters used 
+  to configure log gap detection and resolution at the standby 
+  database side (physical standby).
+
+  The standby can do its own GAP analysis and can request logs 
+  from the FAL_SERVER. 
+
+  In Primary site:
+
+    FAL_SERVER=STANDBY
+    FAL_CLIENT=PRIMARY
+
+  In Standby site:
+
+    FAL_SERVER=PRIMARY
+    FAL_CLIENT=STANDBY
+  
+
+
+
+How can you trace a session?
+
+  There are several options:
+
+  - Trace your own session.
+
+     alter session set sql_trace = true;
+
+     alter session set events '10046 trace name context forever, level 8';
+
+
+  - Trace another sessions.
+
+     exec dbms_system.set_sql_trace_in_session(&sid, &serial, TRUE);
+
+     exec dbms_system.set_ev(&sid, &serial, 10046, &level, '');
+
+     exec dbms_monitor.session_trace_enable(27);
+
+     Use oradebug
+
+
+  - Everyone
+
+     alter system set sql_trace=true scope=memory;
+
+     alter system set events='10046 trace name context forever, level 12' ;
+
+
+
+Enqueue locks are usually a result of bad code. 

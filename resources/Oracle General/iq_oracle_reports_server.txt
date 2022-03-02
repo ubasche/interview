@@ -1,0 +1,61 @@
+
+Interview Questions - Reports Server
+====================================
+
+How do you create output as HTML or PDF?
+- destype=html
+- destype=pdf
+
+How does reports server find the reports rdf files?
+Set the REPORTS60_PATH variable.
+
+In which modes can you run reports server?
+- AS CGI
+- As servelet
+
+How do you start/stop reports server?
+reports60_server start
+
+What does key mapping mean?
+- Replace a parameter or a set of parameters with an alias. The alias is
+  used in the URL.
+
+How do you configure a printer for reports server?
+- Edit the file uiprint.txt.
+
+How does the reports server authentication work?
+- A logon screen will be displayed for the first report.
+- A cookie will be created.
+- All subsequent reports don't need a logon. 
+- A new logon will be required after closing the browser session or
+  after timeout (defined with REPORTS60_COOKIE_EXPIRE variable).
+
+What are typical things to look at when there are problems with reports server?
+- DISPLAY variable is set correctly.
+- Database connect string is valid.
+- Unix privileges are correct.
+
+How do you stop users using the showmap command?
+- Add REPORTS60_CGINODIAG=No to the apache config file (6iconfig.conf)
+  for Reports Server.
+
+Are there some problems with the DISPLAY variable on UNIX? Which?
+- Reports Server needs an allways up XWindows session.
+
+How do you run several instances of reports server?
+- You start reports server with different names on the same box.
+
+How do you install reports server on a different box than the web server?
+1. Install apache on box1.
+2. Install reports server on box2.
+3. Install the Reports Thin client of box1 (NT)
+   Install Reports Server on box2 and don't use the rwmts60 process (Unix).
+   There is no Reports Thin client on Unix.
+
+How does reports server clustering work? What are the drawbacks?
+- One master reports server can have 1 or more slaves.
+- Single point of failure (when the master server fails).
+
+
+
+# vim: tw=75

@@ -1,0 +1,130 @@
+
+Activating a Standby Database
+=============================
+You should not activate the standby database unless it is an emergency. 
+Once activated, the standby database becomes a normal production database 
+and loses its standby status. 
+
+
+ 
+On Primary
+----------
+
+-- Archive your primary database online redo logs
+
+ALTER SYSTEM ARCHIVE LOG CURRENT;
+  
+  Transfer them to your standby site. 
+  Apply them before activating your standby database. 
+  
+
+
+On Standby
+----------
+
+-- Start redo apply / start managed recocvery
+
+ALTER DATABASE RECOVER MANAGED STANDBY DATABASE DISCONNECT FROM SESSION;
+
+  ==> if you get below error, bounce the database and re-run the command  
+
+  ERROR at line 1:
+  ORA-01153: an incompatible media recovery is active
+
+  shutdown immediate;
+  startup mount;
+  ALTER DATABASE RECOVER MANAGED STANDBY DATABASE DISCONNECT FROM SESSION;
+
+-- Check if files need recovery (the change# has to be in sync for all files)
+
+select * from v$recover_file;
+
+-- Copy missing log files from primary host and register them. Tail the alert.log at the same time.
+
+alter database register or replace physical logfile '/data/oracle/TLNNRG08/archive01/1_11555_734611322.dbf';        
+alter database register or replace physical logfile '/data/oracle/TLNNRG08/archive01/1_11556_734611322.dbf';
+
+-- Activate the standby database
+
+ALTER DATABASE RECOVER MANAGED STANDBY DATABASE CANCEL;
+
+ALTER DATABASE ACTIVATE STANDBY DATABASE;
+
+-- Shut down the stanby instances 
+
+SHUTDOWN IMMEDIATE
+
+
+As soon as possible, back up your new production database (old standby dtabase). 
+At this point, the former standby database is now your production database. 
+
+-- Start the new production instance in read-write or read-only mode: 
+
+STARTUP MOUNT
+ALTER DATABASE OPEN READ ONLY;   
+ALTER DATABASE OPEN READ WRITE;  
+
+
+--------------------------------------------------------------------------------
+Note: 
+After you activate your standby database, you lose all transactions from unarchived 
+logs at your original production database.   
+--------------------------------------------------------------------------------
+ 
+ 
+ 
+
+
+Issue: Log files missing
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+-- Stop redo apply / managed recovery
+
+  ALTER DATABASE RECOVER MANAGED STANDBY DATABASE CANCEL;
+
+-- Re-start redo apply if neccessary if more logs need to be applied (this didn't work)
+
+  ALTER DATABASE RECOVER MANAGED STANDBY DATABASE DISCONNECT FROM SESSION;
+
+
+-- Get missing archive logs
+
+  -- Restore missing archive logs on primary
+
+  rman target /
+  restore archivelog from logseq 11577;
+
+  -- Copy the archive logs to the standby host
+
+
+-- Recover the standby database
+
+  recover standby database using backup controlfile until cancel;
+
+
+-- If all logs are applied, activate the standby database
+
+  ALTER DATABASE ACTIVATE STANDBY DATABASE;
+
+
+-- Bounce the database and open it
+
+  SHUTDOWN IMMEDIATE
+  STARTUP MOUNT
+  ALTER DATABASE OPEN READ ONLY;  
+  ALTER DATABASE OPEN READ WRITE; exit
+
+
+
+
+Other SQL
+~~~~~~~~~
+
+ALTER SYSTEM ARCHIVE LOG CURRENT;   -- on primary
+
+SELECT SEQUENCE#, FIRST_TIME, NEXT_TIME FROM V$ARCHIVED_LOG ORDER BY SEQUENCE#;
+SELECT SEQUENCE#,APPLIED FROM V$ARCHIVED_LOG ORDER BY SEQUENCE#;
+
+select archive_change# ascn, checkpoint_change# pscn FROM v$database;
+
+

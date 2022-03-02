@@ -1,0 +1,591 @@
+
+1) Partitioned Tables (why use them, how do they work, advantages, ...)
+2) Table Indexes (5 different types of indexes)
+3) Tuning Tools and Stragegies
+4) Describe the steps to clone a database
+5) Describe the steps to upgrade from 9.2.0.1 to 9.2.0.4
+6) Describe the steps to recover from a hot backkup
+7) Describe the different components of the SGA and their impact on performance
+8) General troubleshooting (where to look, tools to use, cmds, views, ...)
+
+
+1) Partitioned Tables (why use them, how do they work, advantages, ...)
+=======================================================================
+Used for:
+    - Large table and indexes can be partitioned into smaller, 
+      more manageable pieces
+    - Improved performance (for parallel DML).
+    - Scalable performance with substantial growth in data volumes.
+    - 
+
+Advantages:
+    - Easier management
+    - Increased availability
+    - Performance advantages
+
+Problems:
+    What performance problems can you get when using partitioning?
+    - You can have queries that hit all partitions. Such queries will be
+      slower than the same query on a unpartitioned table.
+    - Using parallel query and partitioning can result in too many
+      processes being spawned, which is bad.
+
+Partition types:
+    - range
+    - hash
+    - list
+
+- prefixed index:
+    - the leftmost columns of the index are based on exactly the 
+      same columns a the partition key of the index
+
+      eg. index columns = acct_no, person, name
+          partition key = acct_no, person
+
+- local index
+    - all keys in a particular index partition refer only to rows stored 
+      in a single underlying table partition (equipartitioned with the 
+      underlying table)
+
+- use local prefixed indexes whenever possible
+- both (prefixed and nonprefixed) local indexes support partition
+  independence
+- it may be more expensive to scan a nonprefixed index
+
+- OLTP
+    - use hash partitioning
+    - use prefixed indexes
+- DSS
+    - use range partitioning
+    - use local indexes
+
+Example:
+
+create table sales
+    (acc_no        number(5),
+     person        varchar2(30),
+     sales_amount  number(8),
+     year          number(4),
+     month         number(2),
+     day           number(2))
+    partition by range (year, month, day)
+    (partition p1 values less than (1997,01,32) tablespace data0,
+     partition p2 values less than (1997,02,30) tablesapce data1,
+     ...
+     partition px values less than (maxvalue,maxvalue,maxvalue) 
+         tablespace datax);
+
+
+create index sales_idx
+on sales(year, month, day)
+local
+    (partition ip1 tablespace idx1,
+     partition ip2 tablespace idx2,
+     ...
+     partition ipx tablespace idxx);
+
+HASH (8.1):
+- easy to implement
+- provides controlable data placement
+- allows greater degrees of parallelism for PDML
+- insert rows into partitions based on hash of partition key
+
+create table product
+    (id      number(5),
+     name    varchar2(30),
+     amount  number(5))
+    storage (initial 10M)
+    partition by hash(id) partitions 16
+    store in (ts1, ts2, ts3, ts4);
+
+    
+ CREATE TABLE employees_reg_p
+        (employee_id  NUMBER(6)
+        ,first_name   VARCHAR2(20)
+        ,last_name    VARCHAR2(25)
+        ,region	      VARCHAR2(15))
+        PARTITION BY LIST (region)
+        (PARTITION zone_1 VALUES('R1','R10','R11') TABLESPACE example
+        ,PARTITION zone_2 VALUES('R13','R14') TABLESPACE example
+        ,PARTITION zone_3 VALUES('R6','R7','R8') TABLESPACE example);
+
+
+
+2) Table Indexes
+================
+Index types:
+    - Unique indexes
+    - Non-unique indexes
+    - Concatenated index
+    - Key-Compressed Index
+
+    - B-tree indexes
+        The default and the most common
+    - B-tree cluster indexes
+        Defined specifically for cluster
+    - Hash cluster indexes
+        Defined specifically for a hash cluster
+    - Global and local (partitioned) indexes
+        Relate to partitioned tables and indexes
+    - Reverse key indexes
+        most useful for Oracle Real Application Cluster applications
+    - Bitmap indexes
+        Work best for columns with a small set of values
+    - Function-based indexes
+        Contain the precomputed value of a function/expression.
+    - Domain indexes
+        Specific to an application or cartridge.
+
+
+3) Tuning Tools and Stragegies
+==============================
+* Determine the problems be asking questions:
+    - Is the whole system slow or has only one user a problem?
+    - Is it a current problem or is it an ongoing problem?
+    - Are other systems affected as well?
+        -> Network problem
+        -> Storage problem
+
+* Do quick checks
+    - Check if tables are analyzed.
+    - Check if a process is using all resoruces:
+        ~ top
+    - Check if the SQL is using indexes.
+        
+* Check the SQL
+    - Explain plan
+    - tkprof
+
+* Check I/O
+    sar 5 5
+    
+* Check CPU
+    top
+    sar 5 5
+
+* Check memory
+    top
+
+- Check v$ views for the session:
+    v$session
+    v$sesstat : memory usage
+    v$sess_io : io
+    v$sqlarea : sql
+    v$transaction, v$rollname, v$session : RBS per session 
+    v$session_event, v$system_event
+
+* For an ongoing performance problem
+    - Use statspack to collect statistics
+
+
+Fix the problem:
+    To many I/O waits
+        - Try to spread I/O to serveral disks.
+    To many CPU waits
+    Not enough memory
+
+    Low Data Dictionary Hit Ratio.
+        - Increase shared_pool_size
+    Low Library Cache Hit Ratio.
+        - Increase shared_pool_size
+    Low Buffer Cache Hit Ratio.
+        - Increase db_cache_size (db_block_buffers) in init.ora.
+    Too many Log Buffer Waits
+        - Increase log_buffer.
+    Too many sorts on disk.
+        - Increase sort_area_size.
+
+    An OS process spinning.
+        - Kill the process.
+
+
+How to you check the problems of an SQL session?
+    - Enterprise Manager.
+    - Other monitoring tool (e.g. Spotlight from Quest, CA Patrol)
+    - sqlplus (use scripts):
+        - v$session
+        - v$session_wait
+        - v$sess_io
+        - v$sesstat
+        - v$session_event
+
+
+How would you tune a database?
+    - Increase the buffer pool to hold small tables in cache
+    - Increase the shared pool to hold SQL statements in cache, to
+      avoid repeatedly parsing.
+    - Create tables with increased free list parameter to enable more
+      simultanious transactions (inserts) on the table.
+    - Set the parameter db_multi_block_read to 64K if there are many full
+      table scans.
+ 
+Which init.ora parameters do you use for tuning?
+   - SHARED_POOL_SIZE for library cache (SQL and PL/SQL)
+                      and data dictionary cache
+   - DB_CACHE_SIZE (DB_BLOCK_BUFFERS) for buffer cache (data blocks)
+   - LOG_BUFFER for redo log buffers
+   - DB_MULTI_BLOCK_READ if there are many full table scans
+
+
+4) Describe the steps to clone a database
+=========================================
+* Ways to duplicate a database:
+    - Make a full export and import it into an other database.
+    - Shutdown the database and copy the datafiles.
+    - Clone the database from a backkup.
+
+* Clone the database after shutdown the source database (or cold backup):
+    - Make scripts to copy and rename the datafiles.
+    - Shutdown the database.
+    - Copy the files to the new location.
+    - Edit the parameter file of new (clone) database and change the file
+      locations.
+        ~ control file locations
+        ~ archive redo and dump file locations
+    - Start the new (clone) database in MOUNT mode.
+    - Run the script to rename the files.
+        alter database rename file 'old' to 'new';
+    - Open the database.
+        alter database open 
+    
+* Clone the database from hot backup:
+    - Make scripts to copy and rename the datafiles.
+    - Create a create controle file script.
+        alter database backup controlfile to trace as
+        '/appl/oracle/db/admin/TST1/create/ccf.sql';
+    - Restore the backup to the new location.
+    - Edit the parameter file of new (clone) database and change the file
+      locations.
+        ~ control file locations
+        ~ archive redo and dump file locations
+    - Edit the create control file script:
+        ~ Use the resetlogs create controlfile command.
+        ~ Change the database name.
+        ~ Change REUSE DATABASE to SET DATABASE.
+        ~ Change the file locations.
+        ~ Add UNTIL CANCEL to the recover command
+            RECOVER DATABASE USING BACKUP CONTROLFILE until cancel
+    - Start the new (clone) database in NOMOUNT mode.
+    - Run the script to create the control file.
+        CREATE CONTROLFILE REUSE set DATABASE "newdbname" RESETLOGS ARCHIVELOG
+        ...
+    - Open the database.
+        alter database open 
+
+
+5) Describe the steps to upgrade from 9.2.0.1 to 9.2.0.4
+========================================================
+* Insatll Oracle software (9.2.0.1).
+* Upgrade to 9.2.0.4
+    - Download the patch
+    - Extract the patch
+        $ cpio -idmvc < 9204_aix5l64_release.cpio
+    - Stop the listener, database and other Oracle processes
+    - Run slibclean as root (AIX)
+    - Install the patch
+        $ ./runInstaller
+            ~ First install new version of the Universal Installer
+            ~ Second install the 9.2.0.4 patchset
+    - Re-start the listener and database
+    
+
+6) Describe the steps to recover from a hot backkup
+===================================================
+
+Loss of control file
+--------------------
+    Restore the backed up control file or use a create control file script.
+
+    * using binray control file backup
+        - Restore the backup of the control file.
+        SQL> startup mount;
+    OR
+    * using a create control file script (trace file)
+        SQL> startup nomount
+        SQL> CREATE CONTROLFILE REUSE set DATABASE "newdbname"
+                RESETLOGS ARCHIVELOG
+             ...
+
+    SQL> recover database using backup controlfile;
+    SQL> alter database open resetlogs;  
+
+Loss of online redo logs
+------------------------
+    SQL> startup mount 
+    SQL> alter database clear logfile '/ORACLE/ORADATA/H817/REDO01.LOG'; 
+    SQL> alter database drop logfile group 1; 
+    SQL> recover database until cancel; 
+    SQL> alter database open resetlogs;  
+
+Loss of datafiles
+-----------------
+    SQL> startup mount 
+    - Identify the datafiles that need recovery:
+        SQL> select file#,name,status from v$datafile;
+        SQL> select file#,online,error from v$recover_file; 
+    SQL> shutdown immediate
+
+    - Restore the affected datafile(s) using OS copy/restore commands from the 
+      previous backup
+    SQL> startup mount 
+    - Perform recovery based on the type of datafile affected namely
+      SYSTEM, ROLLBACK or UNDO, TEMP, DATA or INDEX. 
+      The recover commands could be:
+        SQL> recover database
+        SQL> recover tablespace
+        SQL> recover datafile
+    - SQL> alter database open
+
+
+RMAN
+----
+    >>>>>
+    #
+    # Recover full database from tape.
+    #
+    shutdown abort;
+    startup mount;
+    run {
+        allocate channel t1 type 'SBT_TAPE';
+        restore database;
+        recover database;
+        sql 'ALTER DATABASE OPEN';
+    }
+    <<<<<
+
+
+    >>>>>
+    #
+    # Script for incomplete recovery.
+    #
+    run {
+        ### Choose the type of incomplete recovery and
+        ### change value as needed.
+
+        set until time "TO_DATE('01/14/2002 12:02:14','DD/MM/YYYY HH24:MI:SS')";
+        # set until logseq 379 thread 1;
+        # set until SCN 10000;
+
+        shutdown immediate;
+        startup mount;
+
+        allocate channel t1 type 'SBT_TAPE';
+        restore database;
+        recover database;
+        sql 'alter database open resetlogs';
+
+        ### If you RESETLOGS, then you must RESET DATABASE in RMAN catalog
+        ### and then do a full backup!
+    }
+    <<<<<
+
+
+7) Describe the different components of the SGA and their impact on performance
+===============================================================================
+
+     * System Global Area (SGA), which is shared by all server and
+       background processes and holds the following:
+
+           - Shared Pool: stores most recently used SQL
+               - Library Cache: text of SQL statement
+                                parse tree + compiled version of statement
+                                execution plan
+               - Data Dictionary Cache: table and column definitions
+                                        privileges
+
+           - Database Buffer Cache: stores most recetly used data
+
+           - Redo Log Buffer: register changes made to the database
+
+           - Large pool (optional)
+
+           - Java pool
+
+            buffer_pool_keep
+
+
+     * Program Global Areas (PGA), which is private to each server and
+       background process; there is one PGA for each process. The PGA holds
+       the following:
+           - Stack areas
+           - Data areas
+
+
+8) General troubleshooting (where to look, tools to use, cmds, views, ...)
+==========================================================================
+
+vi $ORACLE_BASE/admin/SID/bdump/alert.log
+
+vi $ORACLE_HOME/newtork/log/listener.log
+vi $ORACLE_HOME/newtork/log/sqlnet.log
+
+OEM
+
+
+
+Tuning Actions
+==============
+
+Oracle init.ora parameters
+--------------------------
+
+Following init.ora parameters have been changed/added during the test. The
+parameter FILESYSTEMIO_OPTIONS had the biggest impact on improving
+performance followed by LOG_PARALLELISM.
+
+# TESCO bespoke parameters
+OPTIMIZER_INDEX_COST_ADJ=20       # for 1 query only, developers need to fix this query
+PARALLEL_MAX_SERVERS=16           # to take advantage of 8 CPUs (twice the number of CPUs)
+LOG_PARALLELISM=8                 # to reduce redo allocation latch contention
+PARALLEL_AUTOMATIC_TUNING=true    # at request of TNorth
+FILESYSTEMIO_OPTIONS=asynch       # this should have been set by default
+
+The auto tuning feature of the Program Global Area (PGA) with
+WORKAREA_SIZE_POLICY and PGA_AGGREGATE_TARGET makes the usage of the old
+parameters obsolete (SORT_AREA_SIZE, HASH_AREA_SIZE,
+BITMAP_MERGE_AREA_SIZE, and CREATE_BITMAP_AREA_SIZE, etc.). 
+The increase of PGA_AGGREGATE_TARGET combined with HASH_JOIN_ENABLED also
+resulted in a big performance increase. 
+
+WORKAREA_SIZE_POLICY=auto
+PGA_AGGREGATE_TARGET=2147483648   # for sorts and joins, 5% of this is what any individual component gets
+HASH_JOIN_ENABLED=true
+
+
+Filesystem IO (concurrent IO)
+-------------
+Best performance is achieved using AIX raw logical volumes for Oracle
+datafiles. If DBAs insist on using filesystems ; please use Concurrent I/O
+[CIO], which allows filesystem performance to approach that of raw devices
+(it will bypass the filesystem cache).
+CIO is only available on JFS2 filesystems and requires AIX v5.2 ML01 (or
+later). 
+CIO will improve database performance especially if several processes are
+writing to the same data file. All other (non database) processes like
+export, copy a file with OS commands, ... will be much slower on a CIO
+filesystem. You can avoid this problem for exports and imports by placing
+the dump file on a non CIO mounted filesystem.
+
+- Mount database file systems in CIO mode
+- Set Oracle parameter FILESYSTEMIO_OPTIONS=SETALL to make instance use
+  asynch and concurrent I/O.
+- If you use cio, use "vmtune" to limit the amount of memory used for
+  filesystem buffers! 
+- Check for cio filesystems:
+    $ /usr/sbin/mount | grep cio 
+    OR
+    $ mount
+
+The mount command will show "cio" in the options if the filesystem is cio
+mounted. If it doesn't show "cio" it will by asyncronous by default.
+
+  node       mounted        mounted over    vfs       date        options
+-------- ---------------  ---------------  ------ ------------ ---------------
+         /dev/a01         /data/a01        jfs2   16 Jan 09:44 rw,log=/dev/loglv01
+         /dev/a02         /data/a02        jfs2   16 Jan 09:44 rw,log=/dev/loglv01
+         /dev/l01         /data/l01        jfs2   16 Jan 09:44 rw,cio,log=/dev/loglv02
+         /dev/l02         /data/l02        jfs2   16 Jan 09:44 rw,cio,log=/dev/loglv02
+         /dev/l03         /data/l03        jfs2   16 Jan 09:44 rw,cio,log=/dev/loglv02
+         /dev/l04         /data/l04        jfs2   16 Jan 09:44 rw,cio,log=/dev/loglv02
+         /dev/d01         /data/d01        jfs2   16 Jan 09:45 rw,cio,log=/dev/loglv00
+         /dev/d02         /data/d02        jfs2   16 Jan 09:45 rw,cio,log=/dev/loglv00
+         /dev/d03         /data/d03        jfs2   16 Jan 09:45 rw,cio,log=/dev/loglv00
+         /dev/d04         /data/d04        jfs2   16 Jan 09:45 rw,cio,log=/dev/loglv00
+         /dev/c01         /data/c01        jfs2   16 Jan 09:45 rw,log=/dev/loglv01
+         /dev/c02         /data/c02        jfs2   16 Jan 09:45 rw,log=/dev/loglv01
+         /dev/c03         /data/c03        jfs2   16 Jan 09:45 rw,log=/dev/loglv02
+         /dev/u01         /data/u01        jfs2   16 Jan 09:45 rw,cio,log=/dev/loglv00
+         /dev/tempbak     /tempbak         jfs2   16 Jan 09:45 rw,log=/dev/loglv04
+ 
+
+Devise usage on this system
+---------------------------
+a01,a02 = archive logs
+l01-l04 = redo logs
+d01-d04 = data files
+c01-c03 = control files
+u01     = undo tablespace
+tempbak = exports
+
+
+Configure FILESYSTEMIO_OPTIONS parameter to configure a database to use
+either direct I/O or concurrent I/O when accessing datafiles, depending on
+the file system that is used to store them. 
+
+Options for Filesystemio_Options:
+
+asynch 
+    - Set by default. This allows asynchronous IO to be used where
+      supported by the OS.
+directio 
+    - This allows directIO to be used where supported by the OS. Direct IO
+      bypasses any Unix buffer cache.
+setall 
+    - Enables both ASYNC and DIRECT IO / CONCURRENT IO.
+    - Datafiles on a JFS file system are accessed using direct I/O
+    - Datafiles on a JFS2 file system are accessed using concurrent I/O
+none 
+    - This disables ASYNC IO and DIRECT IO so that Oracle uses normal
+      synchronous writes, without any direct io options.
+
+Oracle recommends that you use the value SETALL instead of the value
+DIRECTIO, because the DIRECTIO value disables asynchronous I/O. The default
+value for this parameter is ASYNC.
+
+Concurrent IO is like direct IO. Direct IO locks the i-node when the file
+is updated. Concurrent IO doesn't lock it, it relies on the application
+(Oracle) to handle parallel updates of the file (Oracle locks on record not
+on file level). Because of this not locking of the file, concurrent IO
+tends to be faster than direct IO.
+
+Note: Don't put tempfiles, archive logs and binaries in cio mounted filesystems.
+
+Normal mounted filesystems:
+    They work well when many processes update many files (on many disks).
+    Doesn't work well when many processes update the same file, because
+    there will be an OS lock on the file. Other processes wait for the lock
+    to be released.
+Direct IO:
+    Works well when many processes update many files (on many disks).
+    Same problems than normal mounted filesystems with many processes
+    updating the same file.
+Concurrent IO:
+    Works also well when many processes update the same file, because there
+    is no OS lock on the file. Oracle control the locking (locks on record
+    level).
+
+Best results (up to 200MB per sec writes in tests) where achieved when
+running multiple threads (up to 16). With single threads, 45MB per sec
+seamed to be the maximum.
+
+
+EMC DMX and P690 tuning
+-----------------------
+- Increase the number of HBA (host bus adapters) from 2 to 4. This gave a
+  15% improvement. HBA are the network cards in the P690 IBM box.
+- Increase the number of ports on the brocade switches (network switches)
+  from 28 to 60. This resulted in a 2-3 times overhead instead of a 10
+  times overhead. The brocade switches are nework switches for the EMC DMX
+  storrage.
+
+Other actions
+-------------
+
+- Run batch without srdf replication (remote mirror) and resync afterwards.
+- Run batch without archive log mode.
+
+- Increase the db_keep_cache_size to hold all small lookup tables to make
+  sure they are not flushed out by a big batch run.
+
+- Concurrent IO (cio) works only for the writes. And only when you have
+  multiple processes (updating the same file). A single process couldn't
+  use all the available bandwidth.
+- The use the whole bandwidth for reads, use parallel query. Increase the
+  large pool for the parallel queries.
+
+- Use multiple block sizes. A big (32K) block size was used for the batch
+  load nature of the database. As the loads where highly parallelized we
+  got block contention (several processes accessing the same block).
+  Therefore we used a smaller (4K) block size for some tables.
+
+

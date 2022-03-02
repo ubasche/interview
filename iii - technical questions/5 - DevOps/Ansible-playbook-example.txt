@@ -1,0 +1,46 @@
+
+role-haproxyweb.yml 
+>>>>>
+- name: Create Haproxy config directory
+  file: 
+    path: /etc/spreadex/haproxy-{{haproxy_instance_name}}
+    state: directory
+    mode: 0640
+    owner: root
+    group: root      
+  become: true
+
+- name: Copy template file for instance
+  copy:
+    src: "{{ haproxy_template_file }}" 
+    dest: /etc/spreadex/haproxy-{{haproxy_instance_name}}/template.cfg
+    owner: root
+    group: root
+    mode: 0660
+  notify: Restart haproxy-template
+  tags:
+    - config
+
+# Used to send alert emails when an invalid config is generated
+- name: Copy ssmtp config file 
+  template:
+    src: files/ssmtp.conf 
+    dest: /etc/spreadex/haproxy-{{haproxy_instance_name}}/ssmtp.conf
+    owner: root
+    group: root
+    mode: 0770
+
+- name: Spin up Haproxy template docker container
+  docker_container:
+    name: haproxy-template{{haproxy_instance_name}}
+    image: dkr.spx/thirdparty/haproxy-template:{{haproxy_template_version}}
+    restart_policy: always
+    volumes:
+      - /etc/spreadex/haproxy-{{haproxy_instance_name}}/:/etc/haproxy/
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/spreadex/haproxy-{{haproxy_instance_name}}/ssmtp.conf:/etc/ssmtp/ssmtp.conf
+    network_mode: host
+    env:
+      SX_HAPROXY_CONTAINER_NAME: haproxy-{{haproxy_instance_name}}
+      SX_TEMPLATE_FILE: /etc/haproxy/template.cfg
+      

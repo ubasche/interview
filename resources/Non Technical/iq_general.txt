@@ -1,0 +1,331 @@
+
+Interview Questions - General Questions
+=======================================
+
+--------------------------------------------------------------------------- 
+Q. What are your strengths ans weaknesses?
+A. General (for weakness): 
+    Highlight a skill that you wish to improve upon and describe what you
+    are doing to enhance your skill in this area.
+    Stay away from personal qualities and concentrate on professional
+    traits.
+    State only one weekness.
+    Try to point out a couple of weaknesses that the interviewer might see
+    as strengths, such as sometimes being a little too meticulous about the
+    quality of your work. (Avoid saying "I work too hard." It's a
+    predictable, common answer.) For every weakness, offer a strength that
+    compensates for it.
+
+   Strengths (tailor for position offered):
+    - Allways keep up with new technology and have worked on complex systems.
+    - I am working very methodicly.
+    - I work fast and complete tasks quickly (don't waste time).
+    - Have successfully worked in different environments (.com and banks).
+    - Have worked in development and production environments.
+    - Have worked with the complete toolset of Oracle over several years.
+
+   Weaknesses:
+    - I have worked for Unix for a long time and know it very well, but I
+      want to improve on my Unix adminstrator skills. Some positions need
+      the DBA to do Unix administration. I currently have Linux running at
+      home to be able to improve my skills. New techology (web, storrage)
+      makes it neccessary to have more admin like Unix skills.
+
+    - I have worked with Oracle most of the time. I want increase my
+      non-Oracle knowledge. I recently installed SQLServer at home to fresh
+      up my knowledge of it.
+
+--------------------------------------------------------------------------- 
+Q. Why should we hire you?
+A. General:
+    Summarize your experiences.
+    Because of your knowledge, experience, abilities and skills.
+    Point out your positive attributes related to the job, and the good job
+    you've done in the past. Include any compliments you've received from
+    management.
+
+
+    - You are looking for a Oracle DBA that ... I am a very good match to
+      your requirements, because ...
+    - Knowledge of newest technology.
+    - Used to work under pressure.
+    - Have successfully worked in different environments (.com and banks).
+    - Have always been successful at the places I have worked.
+
+    Well, this is the key question! In your job description you clearly
+    state that you are looking for someone who is… and who can do… Is that
+    an accurate description? 
+
+    You can then conclude by saying: 
+    I definitely believe I have the skills and qualities you are looking
+    for to be a success in this job. I'm a team player. I listen and am
+    more than willing to learn from my superiors and I have the desire to
+    do very well. 
+    Is there anything that I have left out that you would like me to expand
+    on? 
+
+    With eleven years' experience working as Oracle DBA and developer in
+    the financial and other leading industries and my proven record of
+    successfully completing projects, I'm confident I would be a great
+    addition to your team. 
+
+--------------------------------------------------------------------------- 
+Q. How would you rate yourself on a scale of 1-to-10?
+
+A. Well, that is a good question. How would I rate myself? 
+   I can only assume that you are referring to my ability to do the job so
+   I have to say that I am quite confident about that and would rate myself
+   edging well up to the seven or eight mark. 
+   However, there is always scope for improvement and I always try to
+   improve from other experienced and skilled people or by reading and so
+   on.
+--------------------------------------------------------------------------- 
+Q. Do you have any questions?
+A. 
+   Ask the interviewer why he joined the company and if he could tell you
+   what challenges and opportunities keep him here.
+  
+    - Can you tell me about your career?
+    - What keeps you here at this company? Why did you join it?
+
+    - What are your plans for the future in technology? Are you plan to use
+      any of the new Oracle technologies like RAC, 10g, ...?
+    - How does a typical day for this role look? Are there regular team
+      meetings?
+    - Where is the job located? 
+    - What might my first assignment be? 
+    - Are there training programs available for staff members and how long
+      before one can apply for them?
+    - What is the longterm strategy of the company?
+    - How is the dress code?
+    - Is there a lot of weekend and out of hours work?
+
+    - You could ask them if they have any concerns or reservations on 
+      what has been discussed or your ability to do the job.
+
+    I have some quesionts to the interview and it's progression:
+    - How many other candidates do you interview?
+    - In what timescales are you going to make your decission?
+
+    Yes, I do. From what you've been asking during the interview, it sounds
+    like you have a problem with customer retention. Can you tell me a
+    little more about the current situation, and what the first challenges
+    would be for the new person?" 
+
+--------------------------------------------------------------------------- 
+Q. Why Do You Want to Work for us? 
+A. General:
+    The interviewer is listening for an answer that indicates you've given
+    this some thought and are not sending out resumes just because there is
+    an opening. For example, "I've selected key companies whose mission
+    statements are in line with my values, where I know I could be excited
+    about what the company does, and this company is very high on my list
+    of desirable choices." 
+
+    Don't talk about what you want; first, talk about their needs: You
+    would like to be part of a specific company project; you would like to
+    solve a company problem; you can make a definite contribution to
+    specific company goals.  
+
+    Avoid the predictable, such as, "Because it's a great company." Say why
+    you think it's a great company.
+
+    - I have selected companies of the finance industrie.
+    - I want to work for companies where I can get excited about what the
+      company does and the work.
+    - I want to work with new technologies in an challanging environment.
+
+--------------------------------------------------------------------------- 
+Q. What about the job offered do you find the most attractive? Least
+   attractive? 
+A. General:
+    List three or more attractive factors and only one minor unattractive
+    factor.  
+
+    Most attractive:
+        - Interesting projects, new technologies used.
+        - Leading player in the finance industrie (of it's industrie sector).
+        - Location (e.g. City).
+
+    Least attractive:
+        - It's only a minor point, but as you have asked for it, the ....
+          could be better ...
+
+--------------------------------------------------------------------------- 
+Q. What Are Your Goals? 
+Q. Where do you see yourself five (ten or fifteen) years from now?
+
+A. General:
+    Sometimes it's best to talk about short-term and intermediate goals
+    rather than locking yourself into the distant future. 
+    
+    Explain your career-advancement goals that are in line with the job for
+    which you are interviewing. Your interviewer is likely more interested
+    in how he, she or the company will benefit from you achieving your
+    goals than what you'll get from it, but it goes hand in hand to a large
+    degree. It's not a good idea to tell your potential new boss that
+    you'll be going after his or her job, but it's okay to mention that
+    you'd like to earn a senior or management position.
+
+    - My immediate goal is to get a job in a growth-oriented company. My
+      long-term goal will depend on where the company goes. I hope to
+      eventually grow into a position of responsibility. 
+    
+--------------------------------------------------------------------------- 
+Q. Why Did You Leave (Or Why Are You Leaving) Your Job? 
+A. 
+    If you're unemployed, state your reason for leaving in a positive
+    context: "I managed to survive two rounds of corporate downsizing, but
+    the third round was a 20 percent reduction in the workforce, which
+    included me." 
+
+    If you are employed, focus on what you want in your next job: "After
+    two years, I made the decision to look for a company that is
+    team-focused, where I can add my experience." 
+
+    - Contract/project came to an end.
+    - Permanent DBA was hired for my replacement.
+    - IT gets outsourced to ... / offshored to ...
+
+--------------------------------------------------------------------------- 
+Q. When Were You Most Satisfied in Your Job? 
+A. 
+    The interviewer wants to know what motivates you. If you can relate an
+    example of a job or project when you were excited, the interviewer will
+    get an idea of your preferences. "I was very satisfied in my last job,
+    because I worked directly with the customers and their problems; that
+    is an important part of the job for me." 
+
+    - At Tesco I was working on a 2TB database using EMC SAN storrage. I
+      haven't worked on this size of database before and it was very
+      exciting and I could learn a lot.
+      
+    - At Tesco I worked on the UBSM (unit based stock managment) project. I
+      joined the project early on and therefor could see it through from
+      the beginning to completion. I found this very satisfying.
+
+    - At Credit Suisse I upgraded a 3-way Oracle streams system after 2
+      months in the job. This was withour prior streams experiance. 
+
+
+--------------------------------------------------------------------------- 
+Q. What Can You Do for Us That Other Candidates Can't? 
+A. 
+    What makes you unique? This will take an assessment of your
+    experiences, skills and traits. Summarize concisely: "I have a unique
+    combination of strong technical skills, and the ability to build strong
+    customer relationships. This allows me to use my knowledge and break
+    down information to be more user-friendly." 
+
+    Relate past experiences that show you've had success in solving
+    previous employer problem(s) that may be similar to those of the
+    prospective employer.  
+
+    - Wide range Oracle skills as DBA and Developer.
+    - Have used the complete Oracle toolset.
+    - Have experience with key technology: RAC, very big databases (2TB),
+      EMC SAN storrage
+
+--------------------------------------------------------------------------- 
+Q. What Are Three Positive Things Your Last Boss Would Say About You? 
+A. 
+    It's time to pull out your old performance appraisals and boss's
+    quotes.  This is a great way to brag about yourself through someone
+    else's words: "My boss has told me that I am the best designer he has
+    ever had. He knows he can rely on me, and he likes my sense of humor." 
+
+    - He will say, that I am doing my job without much guidance. He doesn't
+      need to tell me what to do, I just get on with doing the job.
+    - That he can rely on me getting the job done.
+
+
+--------------------------------------------------------------------------- 
+Q. What Salary Are You Seeking? 
+A. General: 
+    It is to your advantage if the employer tells you the range first.
+    Prepare by knowing the going rate in your area, and your bottom line or
+    walk-away point.
+    
+    - I am sure when the time comes, we can agree on a reasonable amount.
+    - I am currently on £x and I am willing to listen to any reasonable
+      offer.
+    - In what range do you typically pay someone with my background?
+
+--------------------------------------------------------------------------- 
+Q. How long would it take you to make a meaningful contribution to our firm? 
+A. 
+   - Not long at all. I expect only a brief period of adjustment to the new
+     environment after which I should be productive very soon. 
+
+--------------------------------------------------------------------------- 
+Q. How long would you stay with us? 
+A. 
+   - As long as the contract gets renewed.
+   - As long as we both feel I'm contributing, achieving, growing, etc. 
+
+--------------------------------------------------------------------------- 
+Q. Which adjectives would you use to describe yourself?
+A. 
+    Answer with positive, work-oriented adjectives, such as conscientious,
+    hard-working, honest and courteous, plus a brief description or example
+    of why each fits you well.
+
+    - hard-working
+    - honest
+
+--------------------------------------------------------------------------- 
+Q. What type of work environment do you like best?
+A.  
+    Tailor your answer to the job. For example, if in doing your job you're
+    required to lock the lab doors and work alone, then indicate that you
+    enjoy being a team player when needed, but also enjoy working
+    independently. If you're required to attend regular project planning
+    and status meetings, then indicate that you're a strong team player and
+    like being part of a team.
+
+    For working alone:
+        - I enjoy being a team player but also enjoy working independently.
+
+    For working in a team:
+        - I am a strong team player, it gives me inspiration and you can
+          learn from each other in a team.
+
+--------------------------------------------------------------------------- 
+Q. How do you handle pressure and stress?
+A. 
+    This is sort of a double whammy, because you're likely already stressed
+    from the interview and the interviewer can see if you're handling it
+    well or not. Everybody feels stress, but the degree varies. Saying that
+    you whine to your shrink, kick your dog or slam down a fifth of Jack
+    Daniels are not good answers. Exercising, relaxing with a good book,
+    socializing with friends or turning stress into productive energy are
+    more along the lines of the "correct" answers.
+
+    I think it helps when you can switch of from work when you are not in
+    the office. I do this by:
+    - Go to play rugby at weekends.
+    - Go for a night out with friends.
+
+--------------------------------------------------------------------------- 
+Q. Explain how you overcame a major obstacle.
+A. 
+    The interviewer is likely looking for a particular example of your
+    problem-solving skills and the pride you show for solving it.
+
+    Oracle Reports Server:
+        - Had no experience when I did it the first time.
+        - Used Oracle documentation, metalink, Google to find solutions.
+        - Had to make many configuration changes and patch istalls but got
+          it working in the end.
+
+    Oracle Streams:
+        - Had no experience when I started and was in charge of a critical
+          3-way streams system.
+
+--------------------------------------------------------------------------- 
+Q. You have a lot of experience. Explain how this can be usefull.
+A. 
+
+--------------------------------------------------------------------------- 
+
+# vim: tw=75

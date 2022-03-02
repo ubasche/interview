@@ -1,0 +1,127 @@
+
+- Automatic Storage Management (ASM)
+- Leveraging the Flash Recovery Area
+
+- The data is stored in the Automatic Workload Repository (AWR).
+- AWR collects 2 types of usage metrics:
+    ~ Database feature usage.
+    ~ High watermark (HWM) of database attributes.
+   
+- Data Pump
+
+Data Pump Interactive Commands
+    add_file        - add another file to the dump file set
+    continue_client - changes mode from interactive client to logging mode
+    exit_client     - leaves client and discontinues logging
+    kill_job        - detaches all client sessions and terminates job
+    parallel        - increases or decreases the number of threads
+    start_job       - starts or restarts a job (use skip_current option to
+                      skip the recent failed ddl statement)
+    stop_job        - stops the current job
+    status          - displays the status of the job
+
+- Cross-Platform Transportable Tablespaces
+    Convert the datafiles with RMAN if the Endian formats are different.
+       If they are the same skip this step.
+
+- Managing the Scheduler
+
+    Main differenced between dbms_job and dbms_scheduler:
+    - Dbms_scheduler can execute OS executables.
+
+- Collecting Performance Statistics
+    - The Automatic Workload Repository (AWR) takes a snapshot of the
+      database in specified intervals and stores it in the SYSAUX
+      tablespace.
+    - In 10g the performance statistics are collected automatically.
+    - Components of the Common Managebility Infrastructure (CMI)
+        ~ Automantic Workload Repository
+        ~ Automated Tasks
+        ~ Server Alerts
+        ~ Advisory Framework
+    - AWR doesnt contain details info about active sessions. Use the Active
+      Session History (ASH) which samples v$session every second instead.
+
+- Diagnosing Performance Statistics
+    Using the Automatic Database Diagnostic Monitor (ADDM)
+
+Automating Database Management
+    - Using Automatic Shared Memory Management (ASMM)
+
+Collecting Automatic Optimizer Statistics
+-----------------------------------------
+- In 10g the optimizer statistics are collected automatically.
+- The automatic stale monitoring is enabled when STATISTICS_LEVEL is set to
+  TYPICAL or ALL.
+
+
+Identifying the Advisory Framework
+----------------------------------
+- Provides a uniform interface for all advisors.
+- Components:
+    ~ ADDM: Does top-down instance analysis.
+    ~ SQL Tuning Advisor
+        Takes one or more SQL statements as an input and invokes the
+        Automatic Tuning Optimizer (ATO) to perform SQL tuning on the
+        statements. It gives recommendations like: Creation of new indexes,
+        restructuring of the SQL statement, or creation of SQL Profile.
+    ~ SQL Access Advisor
+        Analyzes schema and recomends indexes, mviews and mview logs.
+    ~ Segment Advisor
+    ~ Undo Advisor
+    ~ PGA Advisor
+    ~ Memory Advisor
+
+Tablespace changes
+    - sysaux tablespace
+    - Bigfile Tablespaces
+        have only 1 datafile that can be up to 128 terabytes (depending
+        on blocksize)
+    - Temporary Tablespace Groups
+    - Default permanent tablespace
+
+Procative Tablespace Monitoring
+-------------------------------
+- New package dbms_server_alert to set thresholds to be notified
+    Warning alert level (default 85%)
+    Critical alert level (default 97%)
+
+Automatic Storage Management (ASM)
+- ASM stripes files not logical volumes.
+- If disks are added, ASM automatically moves files from existing disks to
+  the new disk.
+- ASM eliminates the need for a logical valume manager for RAC.
+- New processes for ASM instances:
+    RBAL: Coordinates the disk activity for disk groups.
+    ORBn: Performs the extent movement between disks in the disk group 
+          (n is between 0 and 9)
+
+Understanding the SQL Tuning Advisor
+====================================
+The SQL Tuning Advisor invokes the Automatic Tuning Optimizer (ATO) to
+perform SQL tuning.
+
+Understanding the SQL Access Advisor
+====================================
+- Input sources for SQL Access Advisor:
+    ~ Current SQL statements from v$sql (sql cache)
+    ~ A user-specfied list of SQL statements
+    ~ Name of a schema
+    ~ STSs previously saved in the workload repository
+- It is most benefitial in a data warehouse environment.
+
+Leveraging the Flash Recovery Area
+==================================
+- The database must be in archive log mode to be flashback-enabled.
+- A flash recovery area can be shared by more than one DB.
+- Oracle automatically deletes files from the flash recovery area that are
+  no longer needed. This will be written to the alert log.
+- Fast Recovery using SWITCH DATABASE
+
+  
+Recycle BIN
+
+
+
+
+

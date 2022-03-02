@@ -1,0 +1,372 @@
+<<< AWS DynamoDB.txt >>>
+
+
+Serverless Databass (DynamoDB)
+==============================
+
+
+Resources
+  www.dynamodbguide.com
+  www.youtube.com/watch?v=HaEPXoXVf2k  
+
+
+
+Modes for DynamoDB
+  - Guaranteed throuput and capacity predetermined
+  - "On Demand" mode that has some very high maximums.
+    You only get billed for what you are using.
+
+
+Capacity is measurend in Read Capacity Units (RCU) or Write Capacity Units (WCU).
+
+  1 row of data 4kb in size = 1 RCU
+  1 row of data 4kb in size = 1 WCU
+  
+  Most single rows of data don't get bigger than 1kb.
+
+DynamoDB is a No SQL key-value store.
+
+Queries only on indexed data.
+
+Very fast. 1-9 ms latency.
+
+The speed comes at a cost which is flexibility. 
+  - You can only query on indexes.
+  - Only 1 primary key and 5 other indexes (global secondary indexes) per table.
+
+Databases fit for purpose
+  - No one size fits all.
+  - DynamoDb makes a very good transactional database (OLTP).
+  - Relational database are very good for analytical/reporting databases (OLAP).
+
+Database triggers or procedures
+  - Small pieces of SQL or code executed when data changes or events occur.
+  - DynamoDB offers to use a stream of changes.
+      - Streams can be processed by a Lambda function.
+      - Very powerfull with many appliaction.
+
+
+
+Advanced Design Patterns for DynamoDB
+-------------------------------------
+
+URL: www.youtube.com/watch?v=HaEPXoXVf2k  
+
+
+History of Data Processing (Why NoSQL?)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- RDBMS 
+   ~ It reduces the amount of data (reduce disk space required).
+   ~ It increases the required CPU usage.
+
+- NoSQL
+   ~ Reduces the amount of CPU required.
+   
+In the past:
+  - Storage was very expensive.
+  
+Now:
+  - CPU is the most expensive thing.
+
+
+SQL
+  - Optimized for storage
+  - Normalized / relational
+  - Ad hoc queries
+  - Scale vertically
+  - Good for OLAP
+  - Flexible data model (normalize data)
+  
+NoSQL
+  - Optimized for compute
+  - Denormalized / hierarchical
+  - Instantiated views
+  - Scale horizontally
+  - Build for OLTP at scale
+  - Good if the data access is well known. When data access is coded.
+    Not good for ad hoc queries.
+  - Unflexible data model. The data model is desigened for the application.
+    It's tied to the application.
+    NoSQL is very fast but not flexible.
+    
+
+Horizontal scaling 
+  Scaling by adding more machines to your pool of resources 
+    (also described as “scaling out”).
+
+Vertical scaling 
+  Scaling by adding more power (e.g. CPU, RAM) to an existing machine 
+  (also described as “scaling up”).
+
+
+
+Overview of DynamoDB
+~~~~~~~~~~~~~~~~~~~~
+
+- Fully managed NoSQL database
+- Document or Key-Value
+- Scales to any workload
+- Fast and consistent
+- Access control (fine grained)
+- Event driven programming
+- Partitions are automatically 3-way replicated
+- Supports auto scaling. It adapts to the actual traffic.
+
+
+Table
+  - Partition key
+  - Sort key (optional) also named "range" key
+  
+  
+  e.g.
+    partition key = customer id
+    sort key      = order date
+    
+
+Consistent read types:
+  - Eventually consistent           - Reads from any node
+  - Strongly consitent              - Reads from ??
+  - Guaranteed Strongly consitent   - Reads from primary node
+
+
+Local Secondary Index (LSI)
+  - Have to use the same partition key as the table
+  - Resort the data in the partition
+  - LSI updates are "strongly consistent"
+  
+Global Secondary Index (GSI)
+  - New aggregation of the data
+  - New partition key
+  - GSI updates are "eventually consistent". GSI get updated after table update.
+  
+  
+Scaling NoSQL
+~~~~~~~~~~~~~
+
+Problems:
+  - Most of the access is on one (or few) partitions.
+    You have a hot partition.
+    
+Fix:
+  - Create tables where the partition key element has a large number
+    of distinct values.
+    Values that are requested fairly uniformly as randomly as possible.    
+
+
+NoSQL Data Modelling
+~~~~~~~~~~~~~~~~~~~~
+
+- Data is always relational (this is true also for NoSQL databases).
+
+
+SQL
+  SELECT *
+  FROM products
+  INNER JOIN books;
+  
+  SELECT *
+  FROM products
+  INNER JOIN albums
+  INNER JOIN tracks;
+  
+  SELECT *
+  FROM products
+  INNER JOIN videos
+  INNER JOIN actorvideos
+  INNER JOIN actors;
+  
+NoSQL
+  SELECT * FROM products;
+
+
+
+Selecting a partition key
+
+  - Key with large number of distinct values.
+  - Items are uniformly requested and randomly distributed.
+  
+  Example
+    Bad: status, gender, any true/false keys
+         ==> A lot of data goes into only 2 (or few) partitions.
+      
+    Good: 
+      Partition key is an id column: 
+      user_id, department_id, ...
+      ==> Large number of partitions with less data each.
+
+          
+Selecting a sort key
+
+  - Model 1:n and n:n relationships
+  - Efficient/selective patterns
+      ~ Query multiple entities
+  - Leverage range queries     
+  - Get all the items you need with a single trip to the database.
+    You don't want to go back a second time.     
+          
+  Examples
+    - Orders and OrderItems
+    - Hierachical relationships
+
+
+Tenets of NoSQL Data Modelling
+------------------------------
+
+- Understand the use case
+- Identify the access patterns
+    ~ Read/write workloads
+    ~ Query dimensions and aggregations
+- Data-modelling
+    ~ Avoid relational design patterns, use one table
+- Review -> Repeat -> Review
+
+    
+Understand the use case
+  - Nature of the application
+      - OLTP / OLAP / DSS
+  - Define the Entity-Relationship Model
+  - Idenfify the Life Cycle
+      - TTL, Backup/Archivel, ...
+      
+Idenfify the access patterns
+  - Read/write workloads
+  
+  - Identify data sources
+  - Define query aggregations
+  - Document all workflows
+  
+Data-Modelling
+  Avoid relational design patterns, use one table, do:
+  - 1 application service = 1 table
+      ~ Reduce round trips
+      ~ Simplify access patterns
+  - Identify primary keys
+      ~ How will items be inserted and read?
+      ~ overload items into partitions
+  - Define indexes for secondary access patterns
+
+      
+Complex Queries
+  - DynamoDB Streams and AWS Lambda
+      ~ Streams is the change log for the DynamoDB table
+      ~ When the data is on the stream it can invoke a Lamdba function
+      ~ Lambda has two roles
+          1. One role defines what it can see
+          2. Second role defines what it can do (with the data it can see)
+          ~ Common usage of Lambda functions is aggregation (sum, avg, ...)
+          ~ The computation results are (can be) written back to the table.
+            They are only computed once (ideally).
+          
+Composite Keys
+  Multi-value sorts and filters
+  
+  Sample query
+    - Partition key = opponent
+    - Sort key      = date
+    - Sort condition applies before the read.
+    - Filter condition applies after the read.
+
+    SELECT * FROM game
+    WHERE opponent = 'Bob'
+    ORDER BY date DESC
+    FILTER ON status = 'PENDING';
+
+    This query is ok if you return few items or if most items you return 
+    are 'PENDING'.
+    It is not good if most of your returnd data is not 'PENDIND' and needs to
+    be filtered out. You pull a lot of unneeded data.
+    
+    --> Create a composite key to fix the problem.
+    
+      Concatenate 2 fields togeather for a key, e.g. the status and date fields.
+      This gives you a statusdate sort key (value example 'PENDING_2014-09-30').
+      
+    SELECT * FROM game
+    WHERE opponent = 'Bob'
+    AND statusdate BEGINS_WITH = 'PENDING';          
+
+
+Defining ACID
+
+  ACID (Atomicity, Consistency, Isolation, Durability) is a set of properties of
+  database transactions intended to guarantee validity even in the event of system 
+  crashes, power failures, and other errors.
+  E.g. 
+    - You have 3 updates that all need to succeed to have consistend data.
+        - begin transaction
+        - update 1
+        - update 2
+        - update 3
+        - commit
+        
+  DynamoDB Transactions API
+    - TransactWriteItems
+        ~ Synchronous update, put, delete and check
+            ~ Atomic
+            ~ Automated Rollback
+        ~ Up to 10 items within a transaction
+        ~ Supports multiple tables
+        ~ Complex conditional checks
+
+    - Good use cases
+        ~ Commit changes accross items
+        ~ Contitional batch inserts/updates
+
+    - Bad use case
+        ~ Maintaining normalized data
+        
+        
+Reverse Lookup GSI         
+  To do reverse lookup mean you want to aggregate data by some other field name.
+  Let's say we want to do it by sk (SortKey). 
+  To do this we will create a GSI with sk as partitionKey and pk as SortKey. 
+  ==> This is very usefull for many-to-many relationships.
+
+
+
+
+
+Common NoSQL Design Patterns
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Modelling Real Applications
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The access patterns
+  - Get order(s)
+      - by date range
+          - by customer
+          - by vendor
+  - Get order details
+      - status
+      - items
+  - Get deliveries
+      - by date range
+          - by driver
+          
+
+NoSQL approach
+  1 table for everything
+  
+  The trick is to desing the table to allow a lot of access patterns with
+  only up to 5 GSIs. You can have > 20 (even up to 40) access patterns when
+  you do it right.
+
+
+
+
+Elastic Serverless Applications
+  - Fast to implement
+  - Cheap
+
+
+
+
+
+
+          
+
+
+<<< EOF >>>

@@ -1,0 +1,71 @@
+
+Standby DB Switchover
+---------------------
+
+P-DB = Primary DB at the start of the switchover
+S-DB = Standby DB at the start of the switchover
+
+Steps:
+
+1. End all activities in Primary DB and Standby DB
+
+   Ask users to log off the primary and stnadby databases 
+   or query the V$SESSION to make sure no sessions are active.
+   
+2. Prepare the Primary Database for Switchover
+
+  P-DB: 
+  SQL> ALTER DATABASE COMMIT TO SWITCHOVER TO STANDBY;
+  
+  This statement does the following:
+  - Closes the primary database 
+  - Archives any unarchived log files and applies them to the standby database (S-DB)
+  - Adds an end-of-redo marker to the header of the last log file being archived 
+  - Creates a backup of the current control file 
+  - Converts the current control file into a standby control file 
+
+  
+3. Shut Down and Start Up the Former Primary Instance Without 
+   Mounting the Database
+
+  P-DB:
+  SQL> SHUTDOWN NORMAL;
+  SQL> STARTUP NOMOUNT;
+  
+4. Mount the Former Primary Database in the Standby Database Role
+
+  P-DB:
+  SQL> ALTER DATABASE MOUNT STANDBY DATABASE;
+  
+5. Prepare the Former Standby Database to Switch to the Primary Database Role
+
+  S-DB:
+  SQL> ALTER DATABASE COMMIT TO SWITCHOVER TO PRIMARY;
+  
+  This statement does the following:
+  - Makes sure the last log file has been received and applied through the end-of-redo marker 
+  - Closes the database if it has been opened for read-only transactions 
+  - Converts the standby control file to the current control file 
+  
+6. Shut Down the Database
+
+  S-DB:
+  SQL> SHUTDOWN;
+
+7. Start Up the Database in the Primary Role
+
+  S-DB:
+  SQL> STARTUP;
+  
+8. Put the Standby Database in Managed Recovery Mode
+
+  P-DB:
+  SQL> ALTER DATABASE RECOVDR MANAGED STANDBY DATABASE;
+  
+9: Start Archiving Logs from the Primary Database to the Standby Database
+
+  S-DB:
+  SQL> ALTER SYSTEM ARCHIVE LOG START;
+  SQL> ALTER SYSTEM SWITCH LOGFILE;
+
+

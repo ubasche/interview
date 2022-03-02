@@ -1,0 +1,11 @@
+
+
+What do you do when you are asked to roll out new software over all the bank's clients?
+
+- Get installation instructions from the vendor.
+- Do a test installation, using the help of the supplier if possible.
+- Roll out the software to a small test group, e.g. IT staff.
+- Get feedback from the test group.
+- If test is ok, roll out the software to the rest of the users.
+
+

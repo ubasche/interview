@@ -1,0 +1,148 @@
+- show nodes
+/app/oracle/CRS/bin/olsnodes
+oifcfg getif
+
+- get status of cluster on a node
+/app/oracle/crs/10.1.0.2/bin/crs_stat
+/app/oracle/crs/10.1.0.2/bin/crs_stat -t
+/app/oracle/DNYDTD40/product/CRS/bin/crs_stat -t
+
+srvctl status database -d DLNDTD40
+
+- stop / start cluster services
+/app/oracle/crs/10.1.0.2/bin/crs_stop -all
+/app/oracle/crs/10.1.0.2/bin/crs_start -all
+
+- start databases / instances
+srvctl start database -d QLNDTD50  
+srvctl stop database -d QLNDTD50  
+srvctl start instance -d DLNDTD40 -i DLNDTD4A
+srvctl config database -d DLNDTD40
+
+- add database to cluster
+srvctl add database -d QNYDRD50 -o /app/oracle/QNYDRD40/product/RAC/10.2.0.2 -p /data/oracle/QNYDRD50/u04/initQNYDRD50.ora
+srvctl add instance -d QNYDRD50 -i QNYDRD51 -n njl36d-0004a
+srvctl add instance -d QNYDRD50 -i QNYDRD52 -n njl36d-0004b
+
+- get status of nodeapps
+/app/oracle/DLNDTD40/product/dbms/10.1.0.2/bin/srvctl status nodeapps -n lnl43d-6002
+
+- start / stop nodeapps
+/app/oracle/DLNDTD40/product/dbms/10.1.0.2/bin/srvctl stop nodeapps  -n lnl43d-6004
+/app/oracle/DLNDTD40/product/dbms/10.1.0.2/bin/srvctl start nodeapps -n lnl43d-6002
+
+/app/oracle/QLNDTD40/product/dbms/10.1.0.2/bin/srvctl start nodeapps -n lnl43d-6004
+/app/oracle/QLNDTD40/product/dbms/10.1.0.2/bin/srvctl stop nodeapps  -n lnl43d-6003
+
+srvctl add nodeapps -n njl66d-4101a -o /app/oracle/PNYDTD40/product/dbms/10.1.0.2 -A 169.49.45.242/255.255.255.128/eth0
+srvctl add nodeapps -n njl66d-4101b -o /app/oracle/PNYDTD40/product/dbms/10.1.0.2 -A 169.49.45.243/255.255.255.128/eth0
+
+- Grid Control
+emctl start dbconsole
+emctl stop dbconsole
+emctl status dbconsole
+http://lnl43d-6001.csfp.co.uk:5500/em/
+
+- network configuration
+/sbin/ifconfig -a
+/sbin/ifconfig -a | grep eth
+ifconfig eth0:1 down
+
+- host setup
+cat /etc/hosts
+
+- kernel parameters
+cat /etc/sysctl.conf
+
+- useful:
+$ORACLE_HOME/install/rootdeletenode.sh - on a local node to remove OCR
+
+- SRVCTL help and version
+srvctl -h
+srvctl -V
+
+- raw device setup
+raw -qa
+
+- Bring down CRS
+1.cp /etc/inittab.orig (you had saved as part of the prerequisite) to /etc/inittab. 
+2.then applications  
+   
+   $RACHOME/bin/srvctl stop instance -i <instance name>  -d <dbname> 
+   $RACHOME/bin/srvctl stop nodeapps -n <N1> 
+   $RACHOME/bin/srvctl stop nodeapps -n <N2> 
+
+3.As root, /sbin/init q 
+
+4.
+/etc/init.d/init.crs stop
+/etc/init.d/init.crs disable
+/etc/init.d/init.crs enable
+/etc/init.d/init.crs start 
+
+
+Unregister resource : $ njl96d-0001b:QNYDTD4B:/app/oracle/CRS/10.1.0.2/bin >./crs_unregister ora.DLNDTD40.DLNDTD4A.inst
+
+2006-10-20 22:20:27.498: [ OCRCONF][4133408896]Exporting OCR data to [/tmp/ocr]
+2006-10-20 22:22:15.739: [ OCRCONF][4133421184]Successfully repair local OCR configuration
+
+
+DBADIST
+
+nys01d-027
+cd /app/dbatools/rdist/bin
+UPDATE: ./dbadist.NEW -OL -H lnl43d-6001.csfp.co.uk -f /app/dbatools/rdist/config/Linux/linux-dbatools.full.ORA -TC
+cd /app/dbatools/rdist/bin/Linux/
+FULL: ./linux_dbatools_dist_EUROPE.pl -H lnl43d-6003.csfp.co.uk -TC
+
+
+- privs (also grant dba):
+exec DBMS_STREAMS_AUTH.GRANT_ADMIN_PRIVILEGE('STRMADMIN');
+exec DBMS_CAPTURE_ADM.CREATE_CAPTURE('STRMADMIN.STRM_Q_DLNDTD40','CAPTURE_DLNDTD40');
+aq_tm_processes = 3
+alter system set job_queue_processes = 10 scope=both;
+alter system set logmnr_max_persistent_sessions = 3 scope=spfile;
+alter system set global_names = true scope=both;
+alter system set open_links = 10 scope= spfile;
+alter database rename global_name to DLNDTD40.WORLD;
+exec DBMS_STREAMS_ADM.REMOVE_STREAMS_CONFIGURATION;
+exec dbms_capture_adm.start_Capture('CAPTURE_DLNDTD40');
+
+cd $ORA_CRS_HOME
+ls -lR > /tmp/nodea.out 
+
+alter system set cluster_interconnects = '192.168.3.2' scope=spfile sid='QLNDTD4A';
+alter system set cluster_interconnects = '192.168.3.1' scope=spfile sid='QLNDTD4B';
+
+- ORA DEBUG
+conn sys/sys as sysdba
+oradebug setmypid
+oradebug ipc
+
+- ASM
+init.ora
+shared_pool_size=100m
+INSTANCE_TYPE = ASM
+asm_diskstring=ORCL:*
+
+/etc/init.d/oracleasm configure
+/etc/init.d/oracleasm createdisk DB_RECOVER20 /dev/sdaa
+/etc/init.d/oracleasm deletedisk ARCHIVE01
+/etc/init.d/oracleasm listdisks 
+/etc/init.d/oracleasm querydisk DB_RECOVER19
+/etc/init.d/oracleasm scandisks
+/etc/init.d/oracleasm status
+
+/etc/init.d/oracleasm querydisk /dev/sdaa (lnl43d-6001)
+/etc/init.d/oracleasm querydisk /dev/sde (lnl43d-6002)
+
+create diskgroup DB_RECOVER external REDUNDANCY disk 'ORCL:DB_RECOVER';
+create diskgroup dggroup1 external REDUNDANCY disk '/dev*';
+
+Using the asmcmd utility:
+     asmcmd help                                                   # show help
+     asmcmd ls DATA1/DLNFID10/DATAFILE/                            # list files
+     asmcmd rm DATA1/DLNFID10/DATAFILE/USERS.320.606587621         # remove a file (e.g. before restoring old version)
+     asmcmd -p                                                     # interactive with curr dir displayed
+
+

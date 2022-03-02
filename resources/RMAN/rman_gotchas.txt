@@ -1,0 +1,167 @@
+
+- If you want to recover a prod database but start the background processes 
+  with a different name (e.g. uat).
+
+    db_unique_name=<uat_sid>
+    db_name=<prod_sid>
+    instance_name=<prod_sid>
+
+
+- If RMAN thinks wrongly that a datafile has already been restored.
+  Delete the copy or do a crosscheck.
+
+    list copy of datafile <file#>;
+    list copy;
+    delete copy of datafile <file#>;
+
+    crosscheck copy of database;
+
+
+- To avoid the problem of expired backup pieces, use "nocatalog" to restore.  
+  This will also avoid the time delay needed for the catalog resync.
+
+  Always backup the controlfile.
+
+    - configure rman to autobackup controlfile
+
+  If you need to restore the controlfile:
+
+    - Start the database in nomount. This give RMAN the database name.
+
+    - restore controlfile from 'backup piece';   # use this if you know the piece name of the control file backup
+    OR
+    - restore controlfile from autobackup;       # restores the last autobackedup controlfile
+   
+    - rman nocatalog                             # you don't need the RMAN catalog for restores
+
+
+- Run an rman script and create a log file
+
+    $ rman @<rman_script> > rman_out.log &
+
+
+- "recover .. until ..." tells Oracle that this is an incomplete recovery.
+- "recover .. using backup controlfile" 
+
+
+- When to use "using backup control file"?
+
+    If you specify a BACKUP CONTROLFILE then Oracle uses the file headers
+    rather than control file information to control the recover.
+
+    Use, if:
+
+    ~ Anytime the controlfile is older than your datafiles.
+        E.g.: 
+        You use a backup control file.
+
+    ~ You don't have a valid current control file.
+        E.g.: 
+        The control file is manually created.
+        You use a backup control file.
+
+    Don't use, if:
+
+    ~ If you still have your current control file.
+
+
+
+
+- When to use "open resetlogs"?
+
+    The resetlogs option must be chosen to resynchronize the controlfile.
+
+    Use it:
+
+    ~ Anytime "using backup control file" was used.
+
+    ~ An incomplete recovery was performed.
+
+
+    Don't use it, if:
+
+    ~ You do a complete recovery.
+
+
+    Note:
+    Allways backup your database immediately after opening with resetlogs! 
+
+
+
+
+- What is a backup controlfile?
+
+    A backup control file is NOT:
+
+    ~ An OS image of the control file taken while the database is closed.
+    ~ An OS image of the control file taken while the database is open (I just shuddered).
+    ~ An OS image of the control file taken while the database is mounted.
+    ~ A trace backup of the database control file (not unless a can of
+      tomato sauce, some dough and grated cheese is a pizza).
+
+    A backup control file is:
+
+    A backup control file is an image of the database control file. But
+    this image possesses very distinctive qualities.
+
+    ~ It contains a file type flag (value=4) that tells Oracle it is a
+      backup control file.
+    ~ It is consistent with respect to a single point in time – thus the
+      file type flag for Oracle’s benefit.
+    ~ The Stop SCN markers for each data file record are set to
+      0xffff.ffffffff. To you and I this is hexadecimal for “not available.”
+
+    By issuing recovery using a backup control file I have actually
+    converted the current control file to a backup control file. This does
+    not mean that I could not completely recover this database. All I had
+    to do was issue RECOVER DATABASE USING BACKUP CONTROLFILE and supply
+    the appropriate (preserved) online redo log(s).
+
+    Back to the original question – why does Oracle require a RESETLOGS
+    operation post-recovery using a backup control file? Within each
+    control file there are checkpoint progress records that provide Oracle
+    with the on-disk RBA (redo byte address). This tells Oracle the offset
+    into the current redo log file(s) that the LGWR has flushed the redo
+    thread.
+
+    Let’s suppose Oracle permitted you to open the database without a
+    RESETLOGS after recovery using a backup control file. Then Oracle must
+    use what it knows to be true about its online redo thread: the log file
+    records, redo stream records and checkpoint progress records. If the
+    redo log files remained intact during your restore and recovery then
+    they probably have previously generated redo. If you have 3 online redo
+    log groups and your backup control file states that the on-disk RBA is
+    half way into group 2 and the existing (non-reset) redo log for group 2
+    is full of previously generated redo, Oracle would start writing redo
+    to its last know on-disk RBA. Hopefully you see where this is going.
+    Potentially, the last half of redo written to group 2 would correspond
+    to changes post-recovery, i.e. you would have a redo log that is
+    corrupt. There could be a major gap in SCNs between the last entry
+    pre-recovery and the first entry post-recovery within the same redo log
+    file. For this reason, Oracle needs to update the redo thread, log file
+    and checkpoint progress records in accord with the new incarnation of
+    the database.
+
+    I am sure we could come up with dozens of scenarios where not resetting
+    the logs would cause corruption. But, I have already given too many
+    words to a post that was intended to be short.
+
+
+- Resetlogs explained
+
+    The resetlogs option must be chosen to resynchronize the controlfile.
+    The problem with using the backup controlfile is that it cannot tell
+    the difference between an ARCHIVE redo log and an ONLINE redo log.  At
+    some point during the recovery process, we must apply the online redo
+    log file as if it was an archived redo log file (since the controlfile
+    doesn't know when the archive chain of files ends -- its an old backup
+    controlfile).  Since we just use our online logs as if they were
+    archive logs -- they need to be "reset".  
+
+    Oracle enables you to restore an older backup and apply only some redo
+    data, thereby recovering the database to a specified time or SCN. This
+    type of recovery is called incomplete recovery. You must open your
+    database with a RESETLOGS operation after performing incomplete
+    recovery in order to reset the  online redo logs.
+
+

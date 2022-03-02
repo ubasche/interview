@@ -1,0 +1,53 @@
+
+Weakness:
+    - I am sometimes too direct. Sometimes it would be better to be a bit
+      more politically im my aproach.
+    - I don't like office politics. But politics is part of the job and
+      cannot be avoided.
+
+Strength:
+    - Like working hard.
+    - I like learning new things.
+
+Biggest mistake:
+    - Run a process on the production instead of the development server.
+    - Used a new version of software too early (e.g. 64 bit Oracle at
+      boo.com on a new Solaris version). We had to abandone it due to
+      performance issues that we could not solve and go back to 32 bit. I
+      have learned my lesson and am more conservative in adopting new
+      versions. I only use them after an intensive test and try to avoid 2
+      changes at the same time (Oracle version and OS version).
+      This could have proved much more serious in a different environment,
+      like a Bank.
+      There was too much the feeling "we can do it" at dotcom companies.
+
+Biggest success:
+    - Comming to work in the UK.
+
+    - Titels: 
+        Successful project where I was involved from start to finish.
+        Deleopement until handover. Small team, which gave everybody a lot
+        of involvement. Working on a small team gives you much more the
+        feeling of being responsible for the success or failure of the
+        project. There was also direct feedback from the customer to us,
+        something what you usually don't have in big projects.
+
+    - Boo + Nextcard: 
+        Involvement in the launch of a business. Building a new
+        company or business from scratch. Being involved in a very
+        ambicious project and having the excitement of the launch of the
+        website was something special.
+
+    - Coutts Bank:
+        Successfull migration of the Coutts (Natwest) systems to the Royal
+        Bank of Scottland system. This was at the time the biggest IT
+        project in Europe and we delivered it successfull in time.
+
+    From subjective personal feeling, the smaller projects feel more
+    successfull. But when I try to distance myself a bit, probably Coutts
+    was more successfull. Because it was not only successfull from a
+    technological point of view, but also from a business point.
+
+    The project based developments have more of an impact than ongoing
+    developments as for example the development of GNI:rFrame at GNI.
+

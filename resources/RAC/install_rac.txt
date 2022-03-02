@@ -1,0 +1,83 @@
+
+Installing RAC
+==============
+
+Install the Oracle Software
+---------------------------
+
+- Run InstallPrep.sh to check if system is setup correctly for RAC.
+
+- During the installation you need to select the other nodes on which 
+  you want to install the Oracle software.
+
+- OUI will install the software on the local and the remote RAC nodes.
+
+- Configure the shared disks.
+
+- Create an ASCII file identifying the raw volume objects.
+  Format: database_object=raw_device_file_path
+
+  e.g. Create a file KV01_RAC.txt:
+
+  system1=/$PATH/KV01_raw_system_400m
+  spfile1=/$PATH/rKV01_spfile_5m
+  users1=/$PATH/KV01_users_120m
+  temp1=/$PATH/KV01_temp_150m
+  undotbs1=/$PATH/KV01_undotbs1_425m
+  ...
+
+- Set a environment variable that Oracle uses this file to determine
+  the raw device volumens.
+
+  export DBCA_RAW_CONFIG=KV01_RAC.txt
+
+
+Create the RAC database
+-----------------------
+
+- Use dbca to create the RAC database.
+
+- Start dbca.
+
+- Select the nodes on which you want to create the RAC database.
+
+- The SID specified will become the prefix of the instance name
+  (e.g. SID=mydb ==> mydb1, mydb2. ...);
+
+
+Administering RAC instances
+---------------------------
+
+- Create or edit the svrConfig.loc file:
+
+    vi /var/opt/oracle/svrConfig.loc
+
+    svrconfig_loc=/dev/rac_svrconfig_100m
+
+- Execute the following command to initialize the raw volume:
+
+    svrconfig -init
+
+- Start the Global Services Deamon (GSD) on all nodes:
+
+    gsdctl start
+
+- For each instance enter the command:
+
+    svrctl add instance -d db_name -i sid -n node
+
+- Display the configuration
+
+    svrctl config
+
+- Examples for starting and stopping RAC:
+
+    svrctl start database -d racdb2
+    svrctl stop database -d racdb2
+
+    svrctl start instance -d racdb2 -i racinst2
+    svrctl stop instance -d racdb2 -i racinst2
+
+    gsdctl start
+    gsdctl stop
+

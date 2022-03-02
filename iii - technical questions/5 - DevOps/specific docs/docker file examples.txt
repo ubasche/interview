@@ -1,0 +1,140 @@
+
+Dockerfiles (dockerfile)
+===========
+
+In your project directory, create a file named Dockerfile and paste the following:
+
+>>>>>
+FROM python:3.7-alpine
+WORKDIR /code
+ENV FLASK_APP=app.py
+ENV FLASK_RUN_HOST=0.0.0.0
+RUN apk add --no-cache gcc musl-dev linux-headers
+COPY requirements.txt requirements.txt
+RUN pip install -r requirements.txt
+EXPOSE 5000
+COPY . .
+CMD ["flask", "run"]
+<<<<<
+
+This tells Docker to:
+
+  - Build an image starting with the Python 3.7 image.
+  - Set the working directory to /code.
+  - Set environment variables used by the flask command.
+  - Install gcc and other dependencies
+  - Copy requirements.txt and install the Python dependencies.
+  - Add metadata to the image to describe that the container is listening on port 5000
+  - Copy the current directory . in the project to the workdir . in the image.
+  - Set the default command for the container to flask run.
+
+
+--------------------
+
+
+# Dockerfile for nodejs app
+>>>>>
+# Define the docker base image
+FROM node:15
+
+# Create app directory
+WORKDIR /usr/src/app
+
+# Install app dependencies
+# A wildcard is used to ensure both package.json AND package-lock.json are copied
+# where available (npm@5+)
+COPY package*.json ./
+
+RUN npm install express
+# If you are building your code for production
+# RUN npm ci --only=production
+
+# Bundle app source
+COPY . .
+
+EXPOSE 8080
+
+CMD [ "node", "src/index.js" ]
+<<<<<
+
+
+--------------------
+
+
+# Dockerfile to run Python script
+>>>>>
+FROM python:3
+ 
+WORKDIR /usr/src/app
+ 
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+ 
+COPY . .
+ 
+CMD [ "python", "./your-daemon-or-script.py" ]
+<<<<<
+
+
+--------------------
+
+
+# Dockerfile to run Logstash with sflowtool installed
+>>>>>
+FROM docker.elastic.co/logstash/logstash:7.0.1
+
+COPY ./sflowtool-3.41-1.5.x86_64.rpm /tmp/sflowtool-3.41-1.5.x86_64.rpm
+
+USER root
+
+RUN yum install /tmp/sflowtool-3.41-1.5.x86_64.rpm -y
+
+ENTRYPOINT [ "/usr/local/bin/docker-entrypoint" ]
+<<<<<
+
+
+
+Docker-Compose (docker-compose.yml)
+===========
+
+Define services in a Compose file
+
+Create a file called docker-compose.yml in your project directory and paste the following:
+
+>>>>>
+version: "3.9"
+services:
+  web:
+    build: .
+    ports:
+      - "5555:5000"
+    volumes:
+      - .:/code
+    environment:
+      FLASK_ENV: development
+  redis:
+    image: "redis:alpine"
+<<<<<
+
+This Compose file defines two services: web and redis.
+
+Web service keys
+  build:
+    The web service uses an image that’s built from the Dockerfile in the current directory. 
+  ports: 
+    It binds the host machine port 5555 to the container exposed port 5000.
+    You can also use the docker run command: "docker run -p 80:8080 nginx"
+  volumes: 
+    Mounts the project directory (current directory) on the host to /code inside the container,
+    allowing you to modify the code on the fly, without having to rebuild the image. 
+  environment:
+    Sets the FLASK_ENV environment variable, which tells flask run to run in development mode
+    and reload the code on change. This mode should only be used in development.
+  
+Redis service keys:
+  image:
+    It uses a public Redis image pulled from the Docker Hub registry.
+
+
+--------------------
+

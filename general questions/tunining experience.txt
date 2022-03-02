@@ -1,0 +1,12 @@
+
+ServiceNow has been introduced to RBS two years ago replacing the old legacy system. It is used for raising and tracking production change requests, incidents and non-production work requests. I have used ServiceNow since it's introductuion.
+
+I was working at the MIG project which is a bespoke interface to a 3rd party application. 
+A performance tuing exercise was part of the requirements. I run AWR and ASH reports to identify issues.
+For identified problem SQL statements, I run the SQL tuning advisor. The resulting fixes included additional indexes and code changes.
+
+The LoanIQ project team had a few performance issues with the batch during my time at the project. I followed the same approach by running the 
+AWR report. It was ususally very clear what SQL was the problem. Most of the time it was due to plan stabliliy when the 
+optimizer picked up a bad execution plan. I checked if there was a recent execution plan change for this SQL in question 
+using dba_hist views, compared the plans, their run time and used sqlprofiles to get the optimizer to use the correct execution plan in future.
+

@@ -1,0 +1,136 @@
+
+Interview Questions - Unix
+==========================
+
+User
+These questions will demonstrate whether the supplicant has had exposure to
+UNIX as an end-user. Does not imply that the user has any other skills, only
+that they've really used UNIX.
+
+- List 10 UNIX Commands List 10 UNIX Commands
+- What is the most important UNIX command? man
+- How do I create a directory? mkdir
+- How do I find out what processes are running? ps, top
+- How do I exit Emacs/How do I exit vi? ^C^X for Emacs, :q for vi
+- What does the grep command do? searches files or streams for a regex
+- How do I stop a process? kill
+
+Shell Programming
+These questions test whether the supplicant has used basic shell programming
+constructs. If the person has been using the shell for ANY length of time, some
+knowledge of each of these will get picked up. These aren't really easy to pick
+up from books and answers may get fuzzy.
+
+- How do I test for the presence of a file in Bourne Shell? test -f
+- In a shell script, how do I print the scripts arguments? $@ $* or $1..$2..
+- How do you make a shell-script executable?chmod ___ script
+- What is the difference between ' ` and "? Protect, Process and Group
+- How do I connect processes, so stdout of one becomes stdin of another? pipes
+- How do I redirect stderr under a Bourne Shell? 2>
+- How do I determine the home directory of a user in a shell script? $HOME, ~, /etc/passwd
+- What is a regular expression? pattern matching language
+- Explain shell job control. fg,bg,&,^Z
+- Whats the differences between a Bourne and C-Shell? startup file, script syntax, etc..
+- How are new processes created? fork/exec 
+
+Basic (generic) Administration
+These questions test whether the supplicant has done basic UNIX System
+Administration. Some questions (fsck) may not apply if the system architecture
+does not have an analogous construct (AIX). Sophistocated Help Desk personnel
+should be able to answer all of these. Since they all deal with day-to-day
+administration.
+
+- How do I find out who is logged into the system? who,w
+- What are the fields in the password file? user:pw:uid:gid:gcos:home:shell
+- What steps to setup a new user? /etc/passwd, home dir, permissions
+- What directory is typically used as scratchspace? /tmp
+- How do I stop a UNIX system? halt,init,shutdown
+- Name some top-level (under /) directories? (etc,bin,usr,var,tmp)
+- How do I install a new printer? lpadmin, /etc/printcap
+- What does fsck do? fixes filesystems (no AIX)
+- Explain the concept of virtual memory. Physmem, Swap, and paging.
+- What kind of permission would "chmod 755" yeild on a file?U = rwx, g/o rx
+- What is an "s" in a file's permission mean? setuid 
+- What does a "b" as the first letter of a file's permissions mean? block special
+- How do I make a new disk available for files? mkpart/newpart,mkfs,mount (no AIX)
+- If I'm logged in as root, what command lets me "become" another user id? su
+- What's the difference between "su" and "su -"?su - run's the user's login files 
+- What command will tell me how busy the system is? (load average) top,sar,iostat,vmstat
+- How do I see what print jobs are pending? lpstat, lpc stat, etc..
+- How do I setup a printer? lpadmin, printcap, YMWV
+- What's the startup files for the C shell (or Bourne)? .login/.cshrc or .profile
+- What is /etc/aliases? mail aliases for systems
+- What's the current version of your OS? SunOS 5.x/2.x, HPUX ~10, AIX ~4, IRIX 5/6,etc..
+
+Advanced Administration
+These questions separate the men from the boys.
+- What is /etc/inittab? Startup sequence file
+- Where is the "main" mail configuration file for a system? sendmail.cf
+- What is the first process to start on a UNIX system, after the kernel? init 
+- What is an inode? pointer to block of disk, referenced in a directory
+- What does the ipcs command do? shows status of System V IPC structures 
+- What is the Changed time on an inode/file mean? Last time the inode was modified 
+- What's an indirect block? Pointer to a list of blocks  
+- What is an X Server? graphical display device, optional
+- What are two X Clients? xterm, xclock, netscape, CDE, etc...
+- What is RAID? Redundant Array of Independant Disks, striping, mirroring, etc.. 
+- How do I change the priority of a process?nice, renice, priocntl (SysV.4) 
+
+UNIX Network
+These questions test whether the supplicant has used basic network commands.
+Note, this doesn't mean that he knows anything about how they work.
+
+- What is a web server? What is a web client? place with pages, netscape/msie
+- How can I copy a file from one system to another? ftp,rcp
+- What command lets me remotely log into another system? telnet,rsh
+- Give an example of a domain name? dcicorp.com, ford.com
+- Give an example of a host name? varies widely
+
+Networking Administration
+These questions test whether the supplicant has done basic network
+administration. Note, this doesn't mean that he may not know some networking
+tools (FTP,rcp, etc..) but has he set them up before, does he know how they
+work?
+
+- What is an IP address? 32-bit Internet Protocol ID Number
+- What is a subnet? logical/physical grouping of systems by IP/Subnet
+- What is a MAC accress? ID number burned into every ethernet card
+- What is a hub? common: same-subnet, same-collision domain ether connection
+- How do I test to see if a system is setup on the network correctly? ping
+- How do I display the route table? netstat, route
+- What's in the inetd.conf file? Internet daemon info 
+- What is DNS? heirarchical network naming system, Domain Naming System
+- What features of Anonymous FTP make it secure?chroot'ed environment
+- What is NSLOOKUP? tool for querying names/addresses in DNS
+- What are RPC's? Remote Procedure Calls 
+- What is an A record? primary name->ip address mapping 
+- What is an MX record? mail domain mapping record 
+- What is NFS? Network File System
+- How do I setup a system as an NFS server? share,/etc/exports,sharetab, etc..
+- How do I setup a system as an NFS client? mount, mount tables
+- What is SMTP? Simple Mail Transport Protocol
+- What is traceroute? IP routing utility
+- How does traceroute work? declining TTL in IP header
+
+Security
+For those people that put "security" down, these two questions should be quite
+easy for UNIX "security" people.
+
+- What are shadow passwords? unreadable password files
+- What is an rhosts file? Why is it bad? Bezerkley trust, can be abused
+- Why are set-uid shell scripts a bad idea? unexpected shell expansion 
+- What is SSH? Secure Shell 
+- Explain (briefly) Kerberos? Ticket-based scheme for authentication 
+- What is the problem with running fingerd(1)? Gratuituous information
+- Sendmail is currently at what version? 8.x. If they don't use sendmail, hooray
+- Who is CERT? What do they do? Computer Emergency Response Team, issue advisories
+
+Perl
+These indicate whether or not a person really has seen perl scripts before.
+Perl scripts can be easy to read, but if you write them, these questions are
+easy. Use the perl examination for further testing here.
+
+- What does the @ in a variable indicate? its an array
+- What's the current version of Perl? 4 or 5, prefer 5. 5.005 is MRV
+- What is a Hash? a key-data pair type of array variable
+

@@ -1,0 +1,173 @@
+
+1) what editor do you use?  (hint: a wrong answer here will heavily
+	influence the interview...  what is on ALL Unix systems? ;)
+    vi
+
+2) what shell do you use?   (hint: a wrong answer here will affect your chances)
+    sh, ksh or bash
+
+3) what is the best shell for root?
+    sh
+
+4) why is that the best shell for root?
+    sh is always available
+
+5) list the operating systems you are familiar with and the versions.
+    AIX, HP-UX, Solaris, Linux
+
+6) how do you backup your system?
+    ufsdump
+
+7) what commercial tools have you used for backup and archive?
+    ???
+
+8) what UID does root have across an NFS mount by default?
+    ???
+
+9) what file contains the mounted file systems in Solaris?
+    /etc/vfstab
+
+10) what file contains the mounted file systems in HP-UX?
+    ???
+
+11) what command identifies the NIS server you are bound to?
+    ???
+
+12) what is the name of the administrative tool for Sun?
+    admintool
+13) what is the name of the administrative tool for HP?
+    ???
+14) what is the name of the administrative tool for IBM?
+    ???
+
+15) if you are going to modify CDE files, which directory should you edit: 
+	/usr/dt...  or /etc/dt...  ?
+    ???
+
+16) what differs between the NIS entry in the /etc/passwd file between HP and Sun?
+
+17) in Solaris 2.5 what is the name of the file with the NFS exported files?
+18) in Solaris 2.6 what is the name of the file with the NFS exported files?
+
+19) identify some differences btwn CDE in Solaris 2.6 and Solaris 2.7?
+
+20) How can you tell what is attached to the SCSI chain on a Sun system?
+21) How can you tell what is attached to the SCSI chain on an HP system?
+
+22) What command will tell you have much memory a system has in Solaris?
+    prtconf
+23) What command will tell you have much memory a system has in HP-UX?
+
+24) Where are system messages logged in Solaris?
+    /var/admin/messages
+25) Where are system messages logged in HP-UX?
+
+26) How would you "break" an NFS mount on a system that has users on it?
+
+27) Explain how you could stop and start a process without rebooting?
+    /etc/init.d/<process> start
+    /etc/init.d/<process> stop
+
+28) What command will tell you how long a system has been running?
+    uptime
+
+29) What is LVM? Logical Volume Manager
+30) what is an HFS?
+31) what is fsck? checks and repairs file systems
+32) what is Jxfs or Vxfs?
+
+33) how do you get a Sun system to single user mode?  
+    init s
+    shutdown s
+
+34) how do you get an HP system to single user mode?
+
+35) What files control basic hostname and network information on a Sun?  (hint: 3)
+    /etc/inet/hosts
+    /etc/nodename
+    /etc/hostname.<interface>
+36) What files control basic hostname and network information on an HP?  (hint: 2)
+
+37) What command will provide status of your filesystems on a Sun?
+    df ???
+38) What command will provide status of your filesystems on a HP?
+39) What command will provide status of your filesystems on a Linux system?
+
+40) What file do you edit to permit non-console login of root on a Solaris system?
+    /etc/default/logon        (CONSOLE=/dev/console to only allow console logons)
+41) What file (with path) contains the information that appears when you
+      right click on the background of a CDE login?
+42) What command, with path, launches OpenWindows on a SunOs 4.1.3 system?
+43) What command provides information on the health and performance of NFS?
+44) What command provides information on your network connection?
+
+45) What are some of the tags in HTML that do not require a closing tag?  
+
+46) What command can you use to find the path to an application?
+    which
+
+47) What option can you use with FTP to automatically transfer using wildcards?
+    prompt
+
+48) What character(s) show up in an ascii file created in MSDos or Windows
+    when FTP'd in Binary mode?
+    ^M (new line)
+
+49) What does the ioscan command do?
+
+50) What does the lanscan command do?
+
+51) What command in Solaris shows disk partitions?
+
+52) What are the tar commands to display the contents of an archive?
+    tar -tvf <file>
+
+53) What directory are programs like perl and netscape installed in?
+    /usr
+
+54) What is the recommended ratio of swap to memory for X-windows?
+
+55) What command tells you who is logged into a file system?
+
+56) What is the command to shutdown and halt a Sun system?
+    shutdown
+57) What is the command to shutdown and halt an HP system?
+
+58) How do you mount a filesystem?
+    mount -F ufs -o nolargefiles,noatime /dev/dsk/c0t2d0s4 /usr2
+
+59) What command can you use to identify a hostname or ip address?
+    ping localhost
+
+60) What character is used to launch an application and run it in the background?
+    &
+
+61) What command lists the current running jobs?
+    ???
+
+62) How do you kill a running job?
+    kill
+
+63) Where are startup scripts for an HP-UX 10.20 system?
+64) Where are startup scripts for a Solaris 2.6 system?
+    /etc/rc0.d
+    /etc/rc1.d
+    ...
+
+65) What command is used to display NIS host information for an IP address?
+
+66) How do you list the memory shared segments used:
+    - to list them:     ipcs
+    - to remove them:   ipcrm
+
+-----------------
+
+1. explain basic boot process of unix
+2. explain fsck command
+3. how to recover root filesystem
+4. some stuff on vi editor
+5. some usage of ps command
+6. how you can check patch level of unix( like in solaris showrev -p
+   command , in AIX oslevel -r
+7. Some time they will ask you wrong question!!! you should reply with
+   details why question which they ask is wrong {by techincally}

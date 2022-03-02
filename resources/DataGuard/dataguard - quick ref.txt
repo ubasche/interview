@@ -1,0 +1,213 @@
+
+Dataguard - Overview
+--------------------
+
+Dataguard services
+  - Data guard redo transport services
+  - Data guard apply services
+  - Data guard role management services
+
+Automatic Failover 
+  - Fast-Start failover with maximum availability protection (sync) - since 10gR2
+  - Fast-Start failover with maximum performance (async) - since 11g
+
+Protection Modes
+  - Maximum protection : zero data loss (sync)
+  - Maximum availability : zero data loss - assuming that prior to failure there
+                             was no disruption of synchronous comunication
+  - Maximum performance : minimal data loss - as little as a few seconds, depending
+                             on network bandwith (async)
+
+Transient logical standby
+  --> users can convert a physical standby into a transient locical standby to effect
+      a rolling database upgrade and then revert to a physical standby
+
+Oracle active data guard
+  --> offloading resource-intensive activities from the prod db to one or more
+      synchronized standby dbs
+
+
+Up to 30 ARCn processes can be enabled if there is a large number of archive logs
+that need to be transferred.
+
+
+Apply services
+  - Redo apply : used for physical standby databases
+  - SQL apply : used for logical standby databases
+
+Redo apply
+  --> uses the managed recovery process (MRP). MRP reads redo logs and applies them
+      to the standby database.
+
+Real-time query feature
+  --> physical standby can by opened read-only while redo apply is on
+
+SQL apply
+  --> Redo data received gets converted into SQL statements 
+
+Views
+  v$redo_dest_resp_histogram
+    --> histogram of response times for sync redo transport destinations
+
+Data Guard Broker
+  is a distributed management framework that automates creation, maintenance and
+  monitoring of Data Guard
+
+
+Move to standby database
+  switchover - planned outage of production database
+  failover - unplanned outage of production database
+
+
+
+Configure Standby DB
+--------------------
+
+Prod: 
+	1. Backup prod db
+	2. Copy backup to standby host
+	3. Create a standby control file
+		alter database create standby controlfile as '/tmp/STANDBY.ctl';
+
+Standby:
+	1. Restore backup
+	2. Copy standby controlfile to controlfile location specified in init.ora
+	3. Startup "standby" db in nomount
+	4. Mount the database
+		alter database mount standby database;
+	5. Start managed recover
+		recover managed standby database disconnect from session;
+
+You now have a Physical Standby Database running. 
+
+
+Activate Standby DB (standby db becomes a normal production database)
+-------------------
+Standby:
+-- Activate the standby database
+	ALTER DATABASE RECOVER MANAGED STANDBY DATABASE CANCEL;
+	ALTER DATABASE ACTIVATE STANDBY DATABASE;
+-- Bounce the standby database and back it up
+
+
+Standby database switchover
+---------------------------
+- Primary: ALTER DATABASE COMMIT TO SWITCHOVER TO STANDBY;
+- Primary: shutdown and startup nomount
+- Primary: ALTER DATABASE MOUNT STANDBY DATABASE;
+
+- Standby: ALTER DATABASE COMMIT TO SWITCHOVER TO PRIMARY;
+- Standby: shutdwon
+- Standby: startup    -- this will start it up in the primary role
+
+- Primary: ALTER DATABASE RECOVDR MANAGED STANDBY DATABASE;   -- put it in managed recovery mode
+
+
+Adding a datafile on the standby 
+--------------------------------
+(A new file won't be created in standby db if prod path of new file doesn't exist on standby)
+
+1. Take Database out of managed recovery:
+	recover managed standby database cancel; 
+
+2. Set standby file management to manual:
+	alter system set standby_file_management = manual;
+
+3. Add the datafile on BCP:
+	alter database create datafile '$ORACLE_HOME/dbs/dbs/UNNAMED#' as
+	< PROD File with full path with size parameter >;
+
+4. Set standby file management back to auto:
+	alter system set standby_file_management = auto;
+
+5. Put Database back into managed recovery:
+	recover managed standby database disconnect from session;
+
+
+Issue: Log files missing
+~~~~~~~~~~~~~~~~~~~~~~~~
+-- Stop redo apply / managed recovery
+	ALTER DATABASE RECOVER MANAGED STANDBY DATABASE CANCEL;
+-- Re-start redo apply if neccessary if more logs need to be applied (this didn't work)
+	ALTER DATABASE RECOVER MANAGED STANDBY DATABASE DISCONNECT FROM SESSION;
+-- Restore missing archive logs on primary
+-- Copy the archive logs to the standby host
+-- Recover the standby database
+	recover standby database using backup controlfile until cancel;
+-- If all logs are applied, activate the standby database
+	ALTER DATABASE ACTIVATE STANDBY DATABASE;
+-- Bounce the database and open it
+
+
+
+Monitor Standby DB
+------------------
+- Show if there is a gap in the sequence of logs that need to be applied:
+	select * from v$archive_gap;
+
+- Lag in archive logs applied is the difference between the below values
+	select max(sequence#) from v$archived_log;
+	select max(sequence#) from v$archived_log where applied='Y';
+
+- Show which archive logs have been applied
+	select name, archived,applied, status, completed_time
+	from v$ARCHIVED_LOG
+	where applied = 'NO'; 
+
+- Show generic information about the Standby Database (processes running , status of processes etc)
+	select process, status, thread#, sequence#, block#, blocks 
+	from v$managed_standby;
+
+
+Troubleshooting
+---------------
+
+- Archive area on the standby server filling up.
+- Archive files on the prod server being archived before being copied to the sdby server.
+
+==> Restore the archive logs and copy then to the standby host
+
+
+- Archive logs on host but not applied to standby database
+
+==> The most likely cause is that the logfiles have not been register with the Standby Database
+	alter database register logfile ‘< full path of archive logfile >;
+
+
+- Prod alert.log: ORA-16032: parameter destination string cannot be translated. 
+
+==> Ensure that the parameter STANDBY_ARCHIVE_DEST is set correctly with the full path
+    of the archive area on the Sdby server.
+
+
+Pfiles 
+------
+
+On Prodsrv:
+
+log_archive_dest_1		= 'LOCATION=/oracle/ProdDB/archive/ MANDATORY REOPEN=5'
+log_archive_dest_2		= SERVICE=SdbyDB REOPEN=60
+log_archive_dest_state_1	= enable
+log_archive_dest_state_2	= enable
+standby_archive_dest		= “/oracle/Sdby/archive/”  
+standby_file_management		= auto
+
+#  Used by ARCH process, ( on Prod) , and MRP Process ( Media Recovery Proc on standby )
+#   to handle Gap Resolution, ( Missing / Corrupt Archives ).
+
+fal_client			= SdbyDB
+fal_server			= ProdDB
+
+
+On Sdby Server:
+
+log_archive_dest_1		= 'LOCATION=/oracle/ SdbyDB /archive/ MANDATORY REOPEN=5'
+log_archive_dest_2		= SERVICE= SdbyDB _prd REOPEN=60
+log_archive_dest_state_1	= enable
+log_archive_dest_state_2	= enable
+standby_archive_dest		= '/oracle/SdbyDB/archive/'
+standby_file_management		= auto
+
+fal_client			= SdbyDB
+fal_server			= ProdDB
+

@@ -1,0 +1,329 @@
+
+Interview Questions - Oracle New Features
+=========================================
+
+xxx
+============
+ Oracle 10g
+============
+
+--------------------------------------------------------------------------- 
+Q. What 2 types of incremental backup exist?
+A. 
+    - Conventional incremental backups
+        ~ Writes less data blocks than full backup.
+        ~ Needs to read all data blocks.
+    - Fast incremental backups (new in 10g)
+        ~ Writes less data blocks than full backup.
+        ~ Reads only changed data blocks (since last backup) by using
+          a tracking file.
+
+        Activate by:
+            alter database enable block change tracking 
+            using file ‘/u01/oradata/orcl/change_tracking.f’;
+--------------------------------------------------------------------------- 
+Q. Which 2 parameters define the flash recovery area?
+A. 
+    DB_RECOVERY_FILE_DEST_SIZE
+    DB_RECOVERY_FILE_DEST
+--------------------------------------------------------------------------- 
+Q. Does 10g support the cost based optimizer?
+A. 
+    The cost based optimizer is no longer supported in 10g. Therefor the 
+    parameter settings COST and CHOOSE are invalid.
+--------------------------------------------------------------------------- 
+Q. How do temporary tablespace groups work?
+A. 
+    A temporary tablespace group is created when the first temp tablespace
+    is added to the group. It is deleted when the last temp tablespace is
+    removed.
+--------------------------------------------------------------------------- 
+Q. What file types does datapump create?
+A. 
+    - Dump files.
+    - Log files.
+    - SQL files (contain sql statements extracted from a dump file 
+      using impdp).
+--------------------------------------------------------------------------- 
+Q. How do you refer to the directory in data pump?
+A. 
+    1. Create a directory and give privs to the user:
+        CREATE DIRECTORY dumplocation AS '/oradata/dumpfiles';
+        GRANT READ WRITE ON DIRECTORY dumplocation TO scott;
+    2. Create the default directory DATA_PUMP_DIR which can be used by
+       privileged users (exp_full_database and imp_full_database). These 
+       users do not need explicit read/write privs on this directory.
+--------------------------------------------------------------------------- 
+Q. How does the master table of data pump work?
+A. 
+    - It is maintained in the schema of the job creator.
+    - It bears the name of the job.
+
+    The clients are: expdp and impdp
+--------------------------------------------------------------------------- 
+Q. How can you upgrade to 10g.
+A. 
+    - Using dbua.
+    - Using scripts:
+        ~ utlu101i.sql (preupgrade information utility)
+        ~ u0801070.sql (for upgrading from 8.1.7)
+    - Using export and import.
+--------------------------------------------------------------------------- 
+Q. Which database versions can be upgraded directely to 10g.
+A. 
+    8.0.6, 8.1.7, 9.0.1, 9.2.0
+    Once upgraded it can be only downgraded to 9.2.0 by setting the
+    compatible parameter.
+--------------------------------------------------------------------------- 
+Q. How does cloning with dbca work?
+A. 
+    - It is done by creating a template with structure and data option.
+    - The source database is in mount state when creating the template.
+    - The state of the source database does not matter when creating clones
+      using the template.
+--------------------------------------------------------------------------- 
+Q. At which level is Automatic Storage Managment disk group mirroring done?
+A. 
+    Disk group mirroring for ASM is done at extent level.
+--------------------------------------------------------------------------- 
+Q. Which parameters do you need to set to enable Automatic Shared Memory
+   Management (ASMM)?
+A. 
+    STATISTICS_LEVEL = TYPICAL or ALL
+    SGA_TARGET <> 0
+--------------------------------------------------------------------------- 
+Q. How do you enable auto statistics gathering and advisors?
+A.
+
+To enable the new statistical gathering and advisors like
+    Automatic Workload Repository (AWR)
+    Automatic Database Diagnostic Monitor (ADDM) 
+    etc.
+you must set the parameter
+
+    STATISTICS_LEVEL = TYPICAL or ALL
+
+
+ADDM is invoked automatically every time that a new AWR snapshot is generated
+(by default every 60 minutes)
+ADDM can be invoked manually 
+    $ORACLE_HOME/rdbms/admin/addmrpt.sql
+--------------------------------------------------------------------------- 
+Q. What new processes are in 10g?
+A. 
+    9i mandatory
+    ============
+    pmon    Process Monitor
+                - Performs process recovery when a user process fails.
+    smon    System Monitor
+                - Performs recovery when a failed instance starts up again.
+    dbw0    Database Writer
+                - Writes modified blocks from the database buffer cache to
+                  the datafiles.
+    lgwr    Log Writer 
+                - Writes redo log entries to disk.
+    ckpt    Checkpoint
+                - Triggers a checkpoint. A checkpoint triggers the database
+                  writer the write the buffer cache to the datafiles.
+
+    9i optional
+    ===========
+    reco    Recoverer
+                - Used to resolve distributed transactions that are pending
+                  due to a network or system failure in a distributed
+                  database.  
+    arc0    Archiver
+                - Copies the online redo log files to archival storage
+                  after a log switch has occurred.
+    j000    Job Queue Processes 
+                - Used for batch processing. 
+    d000    Dispatcher
+                - Are optional background processes, present only when a
+                  shared server configuration is used. 
+    lms     Lock Manager Server
+                - Is used for inter-instance locking in Real Application
+                  Clusters (RAC).
+    qmn0    Queue Monitor
+                - Monitor the message queues for Oracle Advanced Queuing.
+
+
+    10g new
+    =======
+    mmon    Manageability Monitor
+                - Performs various manageability-related background tasks:
+                    ~ Issuing alerts whenever a given metrics violates its
+                      threshold value
+                    ~ Taking snapshots by spawning additional process (MMON
+                      slaves)
+                    ~ Capturing statistics value for SQL objects which have
+                      been recently modified
+    mmnl    Light-weight Manageability Monitor
+                - Performs frequent and light-weight manageability-related
+                  tasks, such as session history capture and metrics
+                  computation.
+    mman    Manageability Management
+                - Used for internal database tasks.
+
+    rbal    Rebalance
+                - Coordinates rebalance activity for disk groups in an
+                  Automatic Storage Management (ASM) instance.
+                - It performs a global open on Automatic Storage Management
+                  disks.
+    orb0    Oracle Rebalance
+                - Performs the actual rebalance data extent movements in an
+                  Automatic Storage Management instance. There can be many
+                  of these at a time. 
+
+    osmb    Oracle Storage Managemanet
+                - Is present in a database instance using an Automatic
+                  Storage Management disk group. It communicates with the
+                  Automatic Storage Management instance.
+
+--------------------------------------------------------------------------- 
+Q. What extra instance do you need for ASM?
+A. 
+    You need and ASM instance (INSTANCE_TYPE = ASM) where the pmon process
+    will show as +ASM.
+--------------------------------------------------------------------------- 
+Q. What is the new tablespace in Oracle 10g and what is it for?
+A. 
+    It is called SYSAUX.
+    It is the default tablespace for nonessential schemas that are not
+    directly related to user operations, but are important to database
+    integrity nonetheless. 
+    E.g.: The intelligent agent user DBSNMP and data mining user ODM 
+--------------------------------------------------------------------------- 
+Q. What are the new features for 10gAS?
+A. 
+    - Application server can be installed without infrastructure.
+      You can install "Forms and Reports server".
+    - You use opmnctl to start/stop 10gAS and components (not dcmctl as in
+      9iAS). dcmctl is only for changing configuration.
+    - One application server control (web page) for each application server
+      instance. In 9iAS you could use one EM web page to control all
+      application serve instances on a host.
+--------------------------------------------------------------------------- 
+Q. What new 10g features have you used / do you know?
+A. 
+* Flashback Versions Query
+    - To see data changes in a period, not just at two points of time.
+      (E.g. currency changes over time).
+* Rollback Monitoring
+    - Give an accurate estimate of the duration of a rollback operation.
+* Tablespace Management
+    - Default "permanent" tablespace for users
+    - Renaming a Tablespace
+* Oracle Data Pump
+    - The new utility is known as expdp to differentiate it from exp, the
+      original export. In this example, we will use Data Pump to export a
+      large table, CASES, about 3GB in size. Data Pump uses file
+      manipulation on the server side to create and read files; hence,
+      directories are used as locations.
+* Flashback Table
+    - The flashback table feature can recover tables because dropped tables
+      are now held in a recycle bin.
+* Automatic Workload Repository (AWR)
+    - To produce a report from collected statistics and metrics.  Unlike
+      Statspack, snapshots are collected automatically every hour by a new
+      background process called MMON and its slave processes. 
+* Automatic Storage Management
+    - Automatic Storage Management (ASM), lets DBAs execute task for
+      storrage management for the Oracle database.  Using ASM you can
+      transform a bunch of disks to a highly scalable and performant
+      filesystem/volume manager.
+* Automatic Segment Management
+    - Enables to reclaim space with moving the rows. This enables to have a
+      bigger junk of free space abouve the high water mark (which can be
+      removed to claim back space).
+* Automatic Memory Management
+    - The individual pools (shared pool, buffer cache, ...) within the SGA
+      will be dynamically configured based on the workload. A non-zero
+      value of the parameter SGA_TARGET is all that is needed to enable the
+      automatic memory allocation. 
+* SQL Advisor and ADDM
+    - Automatic Database Diagnostic Monitor (ADDM)
+--------------------------------------------------------------------------- 
+Q. What are the main RMAN improvements in 10g?
+A.
+    - compressed backups
+    - block tracking
+--------------------------------------------------------------------------- 
+
+xxx
+===========
+ Oracle 9i
+===========
+
+--------------------------------------------------------------------------- 
+Q. Is there a problem with the spfile parameters in 9i?
+A. 
+    There is a bug:
+    The change of shared pool works only for scope SPFILE and not for any
+    other scope.
+--------------------------------------------------------------------------- 
+Q. What column differentiates the V$ views to the GV$ views and how? 
+A. 
+    The INST_ID column which indicates the instance in a RAC environment
+    the information came from.
+--------------------------------------------------------------------------- 
+Q. What is OMF?
+A. 
+    Oracle managed files.
+    - You define the destination of data and log files:
+        - DB_CREATE_FILE_DEST          # data and temp files
+        - DB_CREATE_ONLINE_LOG_DEST_n  # redo log and control files (n=1..5)
+    - No need to specify datafiles.
+    - Datafiles get deleted when tablespace is dropped.
+--------------------------------------------------------------------------- 
+Q. How do you get rid of datafiles in Oracle 9i?
+A. 
+    Use the delete datafile feature:
+        SQL> DROP TABLESPACE <ts> INCLUDING CONTENTS AND DATAFILES;
+--------------------------------------------------------------------------- 
+Q. Why is the system tablespace dictionary managed?
+A. 
+    The data dictionary is in the system tablespace, therefore there is no
+    performance gain to have it locally managed.
+--------------------------------------------------------------------------- 
+Q. What new 9i features have you used / do you know?
+A. 
+   - SPFILE (server parameter file)
+   - Resumable operations (when out of space, out of quota)
+   - Undo tablespace
+   - OMF (Oracle Managed Files)
+   - Delete datafile feature of drop tablespace command.
+   - External tables
+   - Native compiled PL/SQL
+   - Flashback queries
+   - Multiple block sizes
+--------------------------------------------------------------------------- 
+Q. How do I start/stop a RAC database?
+A. 
+    - Use the svrctl utility
+        srvctl start database -d database_name [-o  start_options]  
+            [-c connect_string] 
+        srvctl stop database -d database_name [-o stop_options]     
+            [-c connect_string]
+    - Use Enterprise Manager
+--------------------------------------------------------------------------- 
+
+xxx
+===========
+ Oracle 8i
+===========
+
+--------------------------------------------------------------------------- 
+Q. What new 8i features have you used / do you know?
+A. 
+    - Locally managed tablespaces.
+    - JVM in the database for Java stored procedures.
+    - Temporary tables.
+    - Materialized views.
+    - Transportable tablespaces.
+    - Online index rebuild.
+    - Composite Partitioning.
+    - Drop table column.
+    - Function based indexes.
+--------------------------------------------------------------------------- 
+
+# vim: tw=75

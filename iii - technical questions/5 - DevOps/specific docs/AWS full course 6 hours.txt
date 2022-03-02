@@ -1,0 +1,86 @@
+
+AWS full course 6 hours
+=======================
+
+https://www.youtube.com/watch?v=RLd_XTyt-w8
+
+--------------------------------------------------
+ ###  General
+--------------------------------------------------
+
+Could Types can be categorized by deployment or service model:
+
+  Depoyment model
+    - Public Cloud (pay for usage)
+    - Private Cloud (own your own cloud infrastructure)
+    - Hybrid Cloud (mix of public and privat cloud)
+   
+  Service model
+    - IaaS - Infrastructure as a service
+    - PaaS - Platform as a service
+    - Saas - Software as a service
+    
+    
+--------------------------------------------------
+ ###  AWS Services
+--------------------------------------------------
+
+AWS Services
+============
+
+  AWS Compute
+    EC2                       - Virtual machines
+    Lambda                    - serverless computing
+    Elastic container service - containerised service
+    
+  Storage
+    S3      - Simple storage, pay as you go, e.g. for backups
+    EBS     - Elastic Block Store, for EC2 instances
+    EFS     - Elastic File System (like EBS but mountable on multible regions and instances)
+    Glacier - for archiving
+
+  Networking
+    VPC            - Virtual Private Cloud, it enables you to launch AWS resources into a virtual network that you've defined.
+    Route 53       - cloud Domain Name System (DNS) web service
+    Direct Connect - establish private connectivity between AWS and your datacenter
+    
+  Security 
+    IAM     - Authentication and authorization
+    KMS     - Data encryption
+    Cognito - user sign-up, sign-in, and access control to your web and mobile apps
+    
+  Management tools
+    CloudWatch     - for monitoring
+    Auto scaling   - for being elastic (auto resource provision)
+    Cloudformation - for deployment
+    
+  Testing 
+    CodeStar     - development tool
+    CodeBuild    - 
+    CodePipeline - 
+    
+  Analytics
+    Athena      - interactive query service to query data and analyze big data in Amazon S3 using standard SQL. 
+    EMR         - big data platform for processing vast amounts of data
+    CloudSearch - earch solution for websites or applications
+    
+--------------------------------------------------
+ ###  Tasks
+--------------------------------------------------
+  
+-- Create S3 bucket
+
+  S3 -> Create Bucket -> 
+    -> Bucket Name: testbucket_1
+    
+-- Create EC2 instance
+    
+  EC2 -> Launch EC2 instance
+
+   ==> Get the pulic IP addr in order to log on
+
+-- Sync the directory with the S3 bucket
+
+  aws cli sync s3://testbucket_1 /data/testdata
+  
+  

@@ -1,0 +1,109 @@
+ASM Diskgroups
+~~~~~~~~~~~~~~~~
+alter diskgroup 'DATA_GRP1' drop file '+DATA_GRP1/DLNDTD60/DATAFILE/LOG_MED_D.290.567792651' 
+alter diskgroup 'DATA_GRP1' add disk 'ORCL:DB_RECOVER8';
+
+SELECT concat('+'||gname, sys_connect_by_path(aname, '/')) full_alias_path 
+FROM (SELECT g.name gname, a.parent_index pindex, a.name aname,
+             a.reference_index rindex 
+      FROM v$asm_alias a, v$asm_diskgroup g
+      WHERE a.group_number = g.group_number)
+START WITH (mod(pindex, power(2, 24))) = 0
+CONNECT BY PRIOR rindex = pindex;
+
+ASM Queries
+~~~~~~~~~~~~~~
+select NAME, TOTAL_MB, FREE_MB from v$asm_disk;
+select NAME, STATE, TOTAL_MB, FREE_MB, USABLE_FILE_MB from  v$asm_diskgroup;
+select name, path, mode_status, state, disk_number from v$asm_disk;
+select library, path from v$asm_disk;
+select * from v$asm_file;
+select * from v$asm_client;
+select * from v$asm_client;
+select a.name, b.NAME from V$ASM_DISK b, V$ASM_DISKGROUP a where a.GROUP_NUMBER = b.GROUP_NUMBER ;
+
+ASM Views
+~~~~~~~~~~~~~~~
+V$ASM_DISKGROUP 
+V$ASM_CLIENT 
+V$ASM_DISK 
+V$ASM_TEMPLATE 
+V$ASM_ALIAS 
+V$ASM_OPERATION 
+
+
+Create Data/Index TS
+~~~~~~~~~~~~~~~~~~~~
+create tablespace abc_sml_d datafile '+DATA1' size 10G;
+create tablespace abc_sml_i datafile '+DATA1' size 5G;
+
+create tablespace abc_sml_d 
+    datafile '+DATA1' size 10G
+    autoextend off
+    extent management local uniform size 128K 
+    segment space management auto;
+
+
+Create UNDO
+~~~~~~~~~~~~
+create undo tablespace undo; ## defaults to 100M (i think)
+create undo tablespace undo datafile '+DATA_GRP1' size 1 G;
+
+Create TEMP
+~~~~~~~~~~~~
+create temporary tablespace temp_asm tempfile '+DATA_GRP1' size 512M;
+create temporary tablespace temp_asm tempfile size 512M;
+alter database default temporary tablespace temp_asm;
+
+Add Redo Members
+~~~~~~~~~~~~~~~~~~~
+alter database add logfile size 256M;
+alter database add thread 2 redo group.
+alter database add logfile thread 2 group 7 size 256M;
+
+-- Issuing this multiple time, automatically multiplexes them (to recover and create dest) and 
+   adds them to different groups.
+
+Migrating Files
+~~~~~~~~~~~~~~~~
+export ORACLE_SID=DLNDTD6A
+rman 
+connect target                  
+connect catalog  rman_dlndtd60@plnrmn01
+
+RMAN> alter tablespace users offline;
+
+RMAN> backup as copy tablespace users format '+DATA_GRP1';
+
+RMAN> switch tablespace users to copy;
+
+RMAN> alter tablespace users online;
+
+
+Administering ASM Instances with SRVCTL in RAC
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Use the following syntax to stop an ASM instance:
+
+Note: For all of the SRVCTL commands in this section for which the -i option is not required, 
+      if you do not specify an instance name, then the command applies to all the ASM 
+      instances on the node.
+
+srvctl stop asm -n <node_name> [-i <asm_instance_name>] [-o <stop_options]
+srvctl stop asm -n lnl43d-6001
+srvctl stop asm -n lnl43d-6002
+srvctl stop asm -n lnl43d-6003
+srvctl stop asm -n lnl43d-6004
+srvctl start asm -n `hostname`
+srvctl start asm -n lnl43d-6001
+srvctl start asm -n lnl43d-6002
+srvctl start asm -n lnl43d-6003
+srvctl start asm -n lnl43d-6004
+
+Use the following syntax to configure an ASM instance:
+
+    srvctl config asm -n <node_name>
+
+Use the following syntax to obtain the status of an ASM instance:
+
+    srvctl status asm -n <node_name>
+

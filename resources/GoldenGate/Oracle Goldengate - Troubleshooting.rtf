@@ -1,0 +1,209 @@
+{\rtf1\ansi\ansicpg1252\deff0\deflang2057{\fonttbl{\f0\fswiss\fcharset0 Arial;}{\f1\fmodern\fprq1\fcharset0 Courier New;}{\f2\fswiss\fprq2\fcharset0 Arial;}{\f3\fnil\fcharset2 Symbol;}}
+{\colortbl ;\red128\green0\blue0;\red0\green0\blue255;}
+{\*\generator Msftedit 5.41.15.1515;}\viewkind4\uc1\pard\f0\fs20\par
+\par
+\b\fs28 Goldengate Troubleshooting\b0\fs20\par
+\par
+\par
+\cf1\b\fs24 Understanding the output of the GGSCI INFO command\b0\par
+\cf0\fs20\par
+Running "info *" from ggsci produces very useful output for troubleshooting but the content varies depending on the process in question. \par
+\par
+In all cases the Checkpoint lag is typically between 0 and 10 seconds. If it's large or building up then things are not working. \par
+\par
+\par
+\b Extract\b0  \par
+\par
+Log Read Checkpoint is updated every time a read of the redo logs is performed to check for transactions. \par
+\par
+Seqno & RBA represent the redo/archive log sequence number and position in the log. \par
+\par
+EXTRACT ELNGGT01 Last Started 2011-06-14 16:18 Status RUNNING\par
+Checkpoint Lag 00:00:00 (updated 00:00:06 ago)\par
+Log Read Checkpoint Oracle Redo Logs\par
+2011-06-14 17:13:42 Thread 1, Seqno 2579, RBA 892928\par
+Log Read Checkpoint Oracle Redo Logs\par
+2011-06-14 17:13:42 Thread 2, Seqno 2498, RBA 1122816 \par
+\par
+\par
+\b Pump\b0\par
+\par
+Log Read Checkpoint here indicates the current trail file name in use, the last access time and the RBA. RBA here is the relative address within the\par
+trail file and is not related to the redo log data. The date here is only updated when data is written to the trail. \par
+\par
+EXTRACT PLNGGT01 Last Started 2011-06-14 16:18 Status RUNNING\par
+Checkpoint Lag 00:00:00 (updated 00:00:01 ago)\par
+Log Read Checkpoint File /oradumps/UOLNGGT1/ggdata01/trail/ELNGGT01/T1000003\par
+2011-06-14 17:13:03.000000 RBA 26609 \par
+\par
+\par
+\b Replicat\b0  \par
+\par
+Log Read Checkpoint here indicates the current trail file in use as well as the last time it was read from and data processed into the database - a useful\par
+quick indicator that processing is going on without having to run any stats commands. The RBA is the point in the trail file it is positioned at. Note\par
+that there is not necessarily any correlation between the name of the trail file being used here and the one at the source. \par
+\par
+REPLICAT RLNPCS01 Last Started 2011-06-14 17:25 Status RUNNING\par
+Checkpoint Lag 00:00:00 (updated 00:00:01 ago)\par
+Log Read Checkpoint File /oradata/POLNPMI2/ggdata01/trail/RLNPCS01/T1000002\par
+2011-06-14 17:13:03.000365 RBA 26912 \par
+\par
+\par
+\par
+\cf1\b\fs24 How to troubleshoot a Goldengate alert\cf0\b0\fs20\par
+\par
+The architecture broadly follows what we are used to with Streams but the replication is external to the database. Most setups will have an extract,\par
+pump and replicat (apply) process but some may only have extract and replicat if source and target are on the same server. The first letter of each process name indicates this - E, P or R. \par
+\par
+A Goldengate alert will come in the form of a process down alert or a latency alert. \par
+\par
+\par
+\b Errors when starting processes\b0  \par
+\par
+Should any process fail on stop check the following files for error information:\par
+ \par
+\cf2\f1 $GG_HOME/ggserr.log\par
+$GG_HOME/<process_name>*.rpt\par
+\par
+e.g.:\par
+$GG_HOME/ELNWSL01*.rpt\par
+$GG_HOME/RLNWSGA1*.rpt\par
+\cf0\f0\par
+\par
+\par
+\b Process down alerts\b0  \par
+\par
+The alert will include the name of the process and the host. Log onto the host\par
+and sudo to the oragg user. Apply the environment for that process name (a\par
+list of process configurations should pop up on login). \par
+\par
+There are two main sources of information for review (these can also be viewed\par
+through GGSCI - see that page): \par
+\par
+The process log  - \cf2 $GG_HOME/dirrpt/<process_name>.rpt \cf0\par
+The GG error log - \cf2 $GG_HOME/ggserr.log \par
+\cf0\par
+\par
+Check the GG error log:\par
+\par
+\cf2\f1   cd $GG_HOME\par
+  view ggserr.log\par
+\par
+  :set ic\par
+  G\par
+  ?abend\par
+\cf0\f0\par
+\par
+The process log is usually the best bet. It recycles after every restart and Goldengate keeps 10 copies on disk. The log contains details about errors and configuration as well as statistics from before the crash. \par
+\par
+ggserr.log contains output from the manager process and may contain extra detail to go with the errors in the process log. \par
+\par
+The configuration for each process can be found in $GG_HOME/dirprm. This should not be altered without a CR. \par
+\par
+Review the errors and liaise with the application team if necessary to get the process restarted. \par
+\par
+A list of possible things that can go wrong and what to check for can be found here. \par
+\par
+\par
+\b Latency alerts\b0  \par
+\par
+The alert will include the name of host plus the source extract process and database. \par
+\par
+The latency alert is driven off the RBSDBA_GG_MONITOR.HEARTBEAT table and compares the current sysdate with the last record that arrived from the source extract.  \par
+\par
+Identify which part of the replication flow (extract -> pump -> replicat) is having a problem and troubleshoot that using the logs and things detailed\par
+above. There will most likely be some accompanying process down alerts if any parts of the Goldengate infrastructure have fallen over as Goldengate processes tend to abend at the first sign of trouble rather than freeze up. \par
+\par
+\par
+\par
+\cf1\b\fs24 Goldengate Possible Issues\cf0\b0\fs20\par
+\par
+\par
+\b General \b0\par
+\par
+- A database restart will always cause an associated extract or replicat to\par
+  abend. Pump processes are usually unaffected \par
+\par
+- If the manager process dies, any extract and replicat processes won't\par
+  function although they will remain in a running state \par
+\par
+\b Extract \b0\par
+\par
+- Extract must have select privileges on all tables in a replication set \par
+\par
+- If an extract has been down for some time it may need archive logs to pick\par
+  up where it left off \par
+\par
+\b Pump \b0\par
+\par
+- Pump needs the manager process to be running at the target side because\par
+  manager must spawn a seperate process to write out the trail file data \par
+\par
+- Any network issue that prevents connection to the target will eventually\par
+  cause a pump to time out and abend. \par
+\par
+\b Replicat \b0\par
+\par
+- Replicat must have select,insert,update,delete on a target table to do it's\par
+  job.  If a table is recreated the grants could get lost. \par
+\par
+- A DDL change to a table on the source that the app team have not applied to\par
+  the target. Goldengate expects the structures to be the same unless you\par
+  specifically tell it otherwise \par
+\par
+- Any reference to a table outside the replication set e.g. via a new FK on\par
+  the source could cause the target side to fail as most targets will be a\par
+  subset of the source \par
+\par
+\par
+\par
+\cf1\b\fs24 Misc Issues\par
+\par
+\pard{\pntext\f3\'B7\tab}{\*\pn\pnlvlblt\pnf3\pnindent0{\pntxtb\'B7}}\fi-720\li720\cf0\fs20 GGS_CHECKPOINT table\b0\par
+\pard\par
+If the GGS_CHECKPOINT table has more than 1 row, you need to delete the stale rows.\par
+Check which row gets updated and delete the other rows.\par
+\par
+\par
+\pard{\pntext\f3\'B7\tab}{\*\pn\pnlvlblt\pnf3\pnindent0{\pntxtb\'B7}}\fi-720\li720\sb100\sa100\b Bringing REPLICAT past an error \b0 (or ignoring errors\f2 , or by ignoring previous trail files\b\f0 )\par
+\pard\b0\par
+To get replicat past an error, edit the parameter file of the replicat process\par
+\par
+\cf2\f1 GGSCI> edit params <replicat_name>\par
+\cf0\f0\par
+Uncomment following lines (remove "-- "). Setting these two parameters will ignore errors:\par
+"HANDLECOLLISIONS" will ignore errors\par
+"END RUNTIME" will stop the replicate process when it reaches the current time (you need then to restart it)\par
+\par
+\cf2\f1 -- END RUNTIME\par
+-- HANDLECOLLISIONS\par
+\par
+\cf0\f0 Start the replicat process\par
+\par
+\cf2\f1 GGSCI> start <replicat_name>\par
+GGSCI> info <replicat_name>\par
+\cf0\f0\par
+When the LAG is back to zero and the process stopped itself, disable the changed parameters (add "-- ") and re-start the replicat process.\par
+\par
+\cf2\f1 GGSCI> edit params <replicat_name>\par
+GGSCI> start <replicat_name>\par
+\cf0\f0\par
+\par
+\pard{\pntext\f3\'B7\tab}{\*\pn\pnlvlblt\pnf3\pnindent0{\pntxtb\'B7}}\fi-720\li720\sb100\sa100\b Checking latency \par
+\pard\b0\par
+\cf2\f1 GGSCI> info *\par
+GGSCI> info <replicat_name>\par
+GGSCI> !\par
+\par
+GGSCI> lag <replicat_name>\par
+\par
+\cf0\f0\par
+\pard{\pntext\f3\'B7\tab}{\*\pn\pnlvlblt\pnf3\pnindent0{\pntxtb\'B7}}\fi-720\li720\sb100\sa100\b Other commands\par
+\pard\b0\par
+Start the extract process from now and ignore all transactions in the queue. Use with care because you are going to loose all transactions that haven't been processd.\par
+\par
+\cf2\f1 GGSCI> start <extract_name> begin now\par
+\cf0\f0\par
+\par
+}
+ 

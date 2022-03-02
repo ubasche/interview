@@ -1,0 +1,54 @@
+
+
+Standby database is behind primary
+----------------------------------
+
+
+Lag in archive logs applied
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+On Standby
+  -- Get the max sequence# 
+     (this should return the same value when run on primary)
+  select max(sequence#) from v$archived_log;
+
+  -- Get the max applied squence#
+  select max(sequence#) from v$archived_log where applied='Y';
+
+  -- Get the difference
+  select max(sequence#) - &max_applied_seq from v$archived_log;
+
+
+
+
+Time lag
+~~~~~~~~
+
+On Standby
+  -- Get the current SCN
+  select current_scn from v$database;
+
+On Primary
+  -- Get the current SCN
+  select current_scn from v$database;
+
+  -- Get the timestamp for the current SCN
+  select scn_to_timestamp(current_scn) from v$database;
+
+  -- Get the timestamp for the current standby SCN
+     (get it here because this query will fail in the standby DB)
+  select scn_to_timestamp(&current_standby_scn) from v$database;
+
+
+
+
+Fix
+~~~
+
+-- Check what are the last applied archive logs
+  select thread#, max(sequence#) from v$archived_log where applied='YES' group by thread#;
+
+-- Check if the next archive log for each thread is there.
+   They are probably missing. If missing restore them.
+
+

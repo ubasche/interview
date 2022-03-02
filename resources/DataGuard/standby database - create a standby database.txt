@@ -1,0 +1,120 @@
+
+Create a standby database
+-------------------------
+
+On primary database
+~~~~~~~~~~~~~~~~~~~
+
+1. Create a password file
+    A password file must be created on the primary db and copied to the standby db.
+
+2. Configure a standby redo log
+
+    alter database add stanby logfile group ...
+
+3. Enable archiving
+
+4. Set primary database init parameters
+
+db_name='whiteowl'
+db_unique_name='whiteowl'
+LOG_ARCHIVE_CONFIG='DG_CONFIG=(whiteowl,blackowl)'
+control_files='/vmasmtest/od01/WHITEOWL/WHITEOWL/controlfile/o1_mf_310n1xf0_.ctl'
+LOG_ARCHIVE_DEST_1=
+  'LOCATION=/vmasmtest/whiteowl/archdest/
+   VALID_FOR=(ALL_LOGFILES,ALL_ROLES)
+   DB_UNIQUE_NAME=whiteowl'
+LOG_ARCHIVE_DEST_2=
+  'SERVICE=blackowl LGWR ASYNC
+   VALID_FOR=(ONLINE_LOGFILES,PRIMARY_ROLE)
+   DB_UNIQUE_NAME=blackowl'
+LOG_ARCHIVE_DEST_STATE_1=ENABLE
+LOG_ARCHIVE_DEST_STATE_2=ENABLE
+REMOTE_LOGIN_PASSWORDFILE=EXCLUSIVE
+LOG_ARCHIVE_FORMAT=%t_%s_%r.arc
+LOG_ARCHIVE_MAX_PROCESSES=30
+# Standby role parameters --------------------------------------------------------------------
+*.fal_server=blackowl
+*.fal_client=whiteowl
+*.standby_file_management=auto
+*.db_file_name_convert='BLACKOWL/BLACKOWL','WHITEOWL/WHITEOWL'
+*.log_file_name_convert='/vmasmtest/od01/BLACKOWL/BLACKOWL/','/vmasmtest/od01/WHITEOWL/WHITEOWL/'
+# ---------------------------------------------------------------------------------------------
+
+5. Create the spfile from the init.ora file
+
+
+On standby database
+~~~~~~~~~~~~~~~~~~~
+
+1. Create a control file for the stanby database
+
+ALTER DATABASE CREATE STANDBY CONTROLFILE AS
+  '/oradisk/app01/oracle/product/10gDB/dbs/blackowl.ctl';
+
+2. Backup the primary database and transfer a copy to the stanby node.
+
+3. Prepare the init.ora file for the standby database
+
+*.db_name='whiteowl'
+*.db_unique_name='blackowl'
+*.audit_file_dest='/oradisk/app01/oracle/admin/blackowl/adump'
+*.background_dump_dest='/oradisk/app01/oracle/admin/blackowl/bdump'
+*.core_dump_dest='/oradisk/app01/oracle/admin/blackowl/cdump'
+*.user_dump_dest='/oradisk/app01/oracle/admin/blackowl/udump'
+*.compatible='10.2.0.1.0'
+*.control_files='/oradisk/od01/BLACKOWL/controlfile/blackowl_01.ctl','/oradisk/od01/BLACKOWL/controlfile/blackowl_02.ctl'
+*.db_block_size=8192
+*.db_create_file_dest='/oradisk/od01/BLACKOWL'
+*.db_domain=''
+*.db_file_multiblock_read_count=16
+*.db_file_name_convert='/oradisk/od01/BLACKOWL/datafile/','/vmasmtest/od01/WHITEOWL/WHITEOWL/datafile/'
+*.log_file_name_convert='/oradisk/od01/BLACKOWL/onlinelog/','/vmasmtest/od01/WHITEOWL/WHITEOWL/onlinelog/'
+*.fal_server='whiteowl'
+*.fal_client='blackowl'
+*.job_queue_processes=10
+*.LOG_ARCHIVE_CONFIG='DG_CONFIG=(whiteowl,blackowl)'
+*.LOG_ARCHIVE_DEST_1=
+  'LOCATION=/oradisk/od01/BLACKOWL/archives/
+   VALID_FOR=(ALL_LOGFILES,ALL_ROLES)
+   DB_UNIQUE_NAME=blackowl'
+*.LOG_ARCHIVE_DEST_2=
+  'SERVICE=whiteowl LGWR ASYNC
+   VALID_FOR=(ONLINE_LOGFILES,PRIMARY_ROLE)
+   DB_UNIQUE_NAME=whiteowl'
+
+4. Configure listener and tnsnames on both nodes
+
+5. Set up the environment ot support the standby databaes on the standby node
+
+  - Copy the password file from Primary to Standby, sys password must be identical
+  - Setup the environment variables to point to the Satndby database
+  - Startup nomount the Standby database and generate an spfile
+  - Startup mount the Standby database and perform recovery
+
+     ALTER DATABASE RECOVER MANAGED STANDBY DATABASE DISCONNECT FROM SESSION;
+
+     --> The alert log of the standby will show the operations taking place
+
+  - Start the Primary Database
+
+     --> The alert log of the primary will show how it recognize the standby 
+         and start shipping archived logs
+
+6. Verify the Physical Standby Database Is Performing Properly
+
+  - Check archived redo log on Standby
+
+      SELECT SEQUENCE#, FIRST_TIME, NEXT_TIME FROM V$ARCHIVED_LOG ORDER BY SEQUENCE#;
+
+  - Switch logfiles on Primary
+
+      alter system switch logfile;
+      archive log list
+
+  - Check archived redo log on Standby
+
+
+
+
+

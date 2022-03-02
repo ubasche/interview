@@ -1,0 +1,56 @@
+T. Oracle 11g
+Q. Flash recovery area is full.
+A.
+
+You need to use RMAN to clear the flash recovery area.
+If you delete the archive log in asmcmd the space won't be freed.
+
+
+-- Check the flash recovery area
+
+show parameter db_recovery_file_dest
+
+set lines 120
+
+col name for a40
+select name
+      ,floor(space_limit/1024/1024) "Size MB"
+      ,ceil(space_used/1024/1024) "Used MB"
+from v$recovery_file_dest
+order by name;
+
+select * from v$flash_recovery_area_usage;
+
+select name, total_mb, free_mb from v$asm_diskgroup where name='FRA1';
+
+
+
+-- If there is disk space left you may increase the space before you clear it
+
+alter system set db_recovery_file_dest_size=... scope=memory sid='*';
+
+
+
+-- Backup and delete archive log files
+   This doesn't delete logs needed for a standby database.
+
+RMAN> backup archivelog all delete input;
+
+
+-- Delete archive logs from flash recovery area
+
+   WARNING: Be careful not to delete required log files.
+
+RMAN> delete archivelog until time "sysdate - 1";
+RMAN> delete archivelog all;
+
+
+
+
+-- If you have deleted them in asmcmd, do a cosscheck
+
+asmcmd> rm -rf ....
+RMAN> crosscheck archivelog all;
+
+
+

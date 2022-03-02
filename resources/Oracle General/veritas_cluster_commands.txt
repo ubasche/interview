@@ -1,0 +1,133 @@
+
+Oracle 9i RAC under Veritas Cluster Control
+-------------------------------------------
+
+VCS agents provide a powerful capability to easily control a wide array of hardware and
+software resources. The agent abstraction makes it simple for a developer to support new, 
+and changing applications in the VCS control framework.
+
+Agents carry out specific functions on resources on behalf of the cluster engine. The
+functions an agent performs are entry points, code sections that carry out specific
+functions, such as online, offline, and monitor. 
+
+General commands
+----------------
+Check the status:
+    $ hastatus -sum
+
+To list Sevice Groups and their state:
+	$hagrp -state
+
+    The following is an example of the printout obtained:
+    #Group         	Attribute             System     	Value
+    ClusterService 	State                 mg4oha1a-h 	|ONLINE|
+    ClusterService 	State                 mg4oha2a-h 	|OFFLINE|
+    cvm            	State                 mg4oha1a-h 	|ONLINE|
+    cvm            	State                 mg4oha2a-h 	|ONLINE|
+    oracle_cwsp   	State                 mg4oha1a-h 	|ONLINE|
+    oracle_cwsp    	State                 mg4oha2a-h 	|ONLINE|
+    vip_mg4oha1a   	State                 mg4oha1a-h 	|ONLINE|
+    vip_mg4oha1a   	State                 mg4oha2a-h 	|OFFLINE|
+    vip_mg4oha2a   	State                 mg4oha1a-h 	|OFFLINE|
+    vip_mg4oha2a   	State                 mg4oha2a-h 	|ONLINE|
+    vip_nbu        	State                 mg4oha1a-h 	|ONLINE|
+    vip_nbu        	State                 mg4oha2a-h 	|OFFLINE|
+
+Check printout
+    $ hasys -state
+
+
+To put an instance into restricted mode
+---------------------------------------
+To perform an action on a Database Instance i.e. to enable Restricted mode:
+    $ hares -action "Oracle Resource Name"  DBRestrict -sys "hostname" 
+
+Once the work has been completed then disable Restricted mode for normal 
+database operation:
+    $ hares -action "Oracle Resource Name"  DBUndoRestrict -sys "hostname" 
+
+
+
+Freezing a Service Group
+------------------------
+The following describes the steps needed to freeze a Veritas Cluster Service
+Group.  This is normally carried out when the user wants VCS to stop monitoring
+and acting on it, if either the Service Group or Resource faults in any way.
+An example of this is when an Oracle DBA is investigatinga problem with the
+database and needs to stop and start it a number of times.
+
+To freeze the Service Group temporarily then carry out the following command:
+	$ hagrp -freeze "Sevice Group Name" 
+
+Once the work has been completed then unfreeze the Service Group to allow
+normal monitoring by VCS:
+	$ hagrp -unfreeze "Sevice Group Name" [-persistent]
+
+
+Switch Service group back to original node after error caused failover
+----------------------------------------------------------------------
+Resolve the problem that caused the failover.
+
+Clear the fault setting within VCS:
+    $ hagrp -clear "service group" -sys "hostname"
+
+Switch the service group back to original node:
+    $ hagrp -switch "service group"  -to "hostname"
+
+
+Resource Going Offline Unexpectedly in a Parallel Service Group
+---------------------------------------------------------------
+Resolve the problem that caused the offline.
+
+Unfreeze Service Group:
+    $hagrp -unfreeze "Service Group" -sys "Hostname"
+
+Clear the fault setting within VCS:
+    To clear at Service Group level:
+        $hagrp -clear "Service Group" -sys "Hostname"
+    To clear at Resource Group level:
+        $hares -clear "Resource Name" -sys "Hostname"
+
+Bring Resource back online:
+    $hares -online "Resource Name" -sys
+
+If for some reason the whole Service Group has been offlined then to
+bring the Service Group online, do:
+    $hagrp -online "Service Group" -sys
+
+
+To stop a database instance
+---------------------------
+Offline the Service Groups that have a Parent - Child relationship to the
+Oracle Service Group that contains the Oracle Resource:
+ 	$hagrp -offline vip_nbu -sys mg4oha1a-h
+
+Offline the remaining Service Groups : 
+	$hagrp -offline vip_mg4oha1a -sys mg4oha1a-h
+	$hagrp -offline vip_mg4oha2a -sys mg4oha2a-h
+
+To shutdown the Database Instance then Offline the Oracle Resource:
+	$ hares -offline ora_cwsp -sys mg4oha1a-h
+
+If you wish to offline the other Cluster Node's instance then do the following
+command:
+    $ hares -offline ora_cwsp -sys mg4oha2a-h
+
+
+To start a database instance
+----------------------------
+To start the Database Instance then Online the Oracle Resource:
+	$ hares -online ora_cwsp  -sys mg4oha1a-h
+
+If you wish to online the other Cluster Node's instance then do the following
+command:
+    $ hares -online ora_cwsp -sys mg4oha2a-h
+
+Online the Service Groups that have a Parent - Child relationship to the Oracle
+Service Group that contains the Oracle Resource:
+    $hagrp -online vip_nbu -sys mg4oha1a-h
+
+Online the remaining Service Groups : 
+	$hagrp -online vip_mg4oha1a -sys mg4oha1a-h
+	$hagrp -online vip_mg4oha2a -sys mg4oha2a-h
+

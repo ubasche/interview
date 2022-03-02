@@ -1,0 +1,158 @@
+
+Oracle Goldengate
+=================
+
+Terminology:
+ 
+Extract  - a process that extracts data from a database into a trail file
+
+Pump     - a type of extract process configured to pump the above trail files 
+           to a remote host if required
+
+Replicat - a process that applies data from the trail files to the database
+           at the destination
+
+Manager  - a process that governs any extract, or replicat processes in the configuration
+
+
+Goldengate Architecture
+-----------------------
+
+Source
+  MGR process     : autostarts other processes and passes environment variables etc.
+  EXTRACT process : reads redo logs and writes to local trail files
+  PUMP process    : reads local trail files and writes to remote trail files
+
+Target
+  MGR process      : autostarts other processes and passes environment variables etc.
+  REPLICAT process : reads local trail files and writes to database
+
+It's possible for both source and target to exist on one server, in which case there 
+may be one shared trail filesystem and no pump process. 
+
+
+The basic workflow is: 
+
+ - Application schema changes are captured by the Extract process using the redo logs and 
+   if necessary the archive logs. The GGEXTRACT database user is used to query various 
+   system views and must also be able to select from any tables in the replication 
+   configuration. 
+
+ - Extract writes the changes to the trail files. 
+
+ - The Pump process tracks any changes to the files and copies the deltas over to the 
+   remote trail file destination 
+
+ - The Replicat process monitors the incoming trail data and applies any changes to 
+   the source schema via the GGREPLICAT database user, which needs full privileges on 
+   the target tables
+
+The manager process is used to autostart any processes configured under it and also passes 
+down various environment variables and other configuration parameters to the child processes.
+
+
+Architecture Overview
+~~~~~~~~~~~~~~~~~~~~~
+
+ App Schema           App Schema
+      |                    ^
+      V                    |
+  Redo Logs                |
+      |                    |
+      V                    |
+   Extract             Replicat
+      |                    ^
+      V                    |
+  Trail Files        Trail Files
+      |                    ^
+      V                    |
+    Pump -------------------
+
+
+
+GGSCI command line utility
+--------------------------
+
+Source the GG environment (RBS specific)
+ls -a .gg*
+. ./.ggenv_shared
+
+
+cd $GG_HOME (the Goldengate software directory)
+./ggsci
+
+
+Useful commands:
+ 
+info all 
+  Show basic process status including the manager process and last checkpoint 
+
+info *
+  Show more detailed status of all currently running extract or replicat processes.
+  Also shows checkpoint and log read information as well as the trail filesystem in use 
+
+info exttrail *
+  Show configuration of a trail filesystem on extract side only
+ (path, max file size, assigned extract process,current position)
+
+start/stop <process name>
+  Start or stop an extract or replicat process.  Can use * to start/stop all. 
+
+start/stop manager
+  Start or stop the manager process 
+
+view report <process name> 
+  Show the log current for the current iteration of the process. The log gets recycled
+  on every restart. Up to 10 older logs can be found in $GG_HOME/dirprm. 
+
+view ggsevt 
+  Show the main Goldengate message log ($GG_HOME/ggserr.log) 
+
+edit params <process name>
+  View and edit the parameter file for an extract or replicat process 
+
+edit params mgr 
+  View and edit the parameter file for the manager process 
+
+stats <process name> total 
+  View statistics for a process since startup (records inserted, updated, deleted etc).
+  Can alternatively supply "daily", "hourly" or "latest" instead of "total" 
+  to get cut down stats 
+
+! 
+  Repeat the last command 
+
+help
+  Get a list of commands 
+
+
+
+Goldengate directories
+----------------------
+
+All the relevant Goldengate-specific directories can be found in the 
+software home ($GG_HOME):
+ 
+Directory Contents 
+
+dirchk 
+  Checkpoint files used to maintain the current point in time for processing.
+  On the replicat side this information is also stored in the checkpoint table
+  GGREPLICAT.GGS_CHECKPOINT. 
+
+dirdef 
+  Definitions files that inform Goldengate about table structures.
+  Used when source and target are not identical. 
+
+dirpcs
+  Process status files that are maintained whilst a process is running. 
+
+dirprm 
+  Configuration files for each process that are refrenced on startup. 
+
+dirrpt 
+  Log files for each process. 
+
+dirtmp 
+  Temporary files. 
+

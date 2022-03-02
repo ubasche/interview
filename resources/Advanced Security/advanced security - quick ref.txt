@@ -1,0 +1,31 @@
+
+Oracle Advanced Security
+------------------------
+
+
+Transparent Data Encriyption (TDE)
+
+	- Encrypts individual table columns or entrire application tablespaces
+
+	- Uses encryption keys and master encryption keys
+
+	- The master encryption key is stored outside the database in a wallet.
+
+	- Dedicated SYSKM role for key management operations.
+
+
+Data Redaction
+
+	- Stored data remains unaltered
+
+	- Data gets transformed and redacted on-the-fly when it leaves the database
+	  (on display)
+
+	- Redaction supports
+
+		~ Redact all data in specific columns 
+		  (e.g. redact all but the last 4 digits of the account no)
+
+		~ Preserve certain pieces of the data
+
+		~ Randomly generate replacement data

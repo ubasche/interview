@@ -1,0 +1,318 @@
+<<< Jenkins.txt >>>
+
+Contents
+--------
+
+#### Introduction to Jenkins
+ ###  General
+ ###  Jenkins Basics
+
+#### Install Jenkins
+ ###  Prerequisites for Installation
+ ###  Install Steps
+ ###  Configure Jenkins  
+
+#### Use Jenkins
+ ###  Create a Job
+
+
+--------------------------------------------------
+ ###  Agile and DevOps
+--------------------------------------------------
+
+Agile Development
+-----------------
+
+  Short, typical 2 weeks, feedback loops (Sprints) consisting of 
+  
+   - Plan, code, test and review (customer review)
+   
+  Agile workflow
+    - Product backlog (by project manager)
+    - Sprint planning
+    - Sprint backlog (list of tasks, features, bug fixes, ...)
+    - Strints (see above)
+        ~ Daily scrums to check on blockers, issues, progress, ...
+    - Deliverable product
+    - Product review
+    
+    
+DevOps Workflow / Phases
+------------------------
+     
+  No Phase        Tools (examples)
+  -- ------------ ------------------------------------------------
+  1. Plan         "Developer" and "customer" the code and modules
+  2. Code         Git
+  3. Build        Gradle, Maven
+  4. Test         Selenium, JUnit
+  5. Integrate    Jenkins, Bamboo
+  6. Deploy       Ansible, Puppet, Chef, Docker
+  7. Operate      Ansible, Puppet, Chef, Docker
+  8. Monitor      Nagios, Splunk
+  9. Feedback
+
+
+========================================================================================================================
+========================================================================================================================
+#### Introduction to Jenkins
+--------------------------------------------------------------------------------
+
+--------------------------------------------------
+ ###  General
+--------------------------------------------------
+
+Useful URLs
+-----------
+
+Automation step by step
+  https://automationstepbystep.com/
+  
+
+Jenkins Beginner Tutorial 1 - Introduction and Getting Started
+  https://www.youtube.com/watch?v=89yWXXIOisk
+
+  There are more clips
+    https://www.youtube.com/playlist?list=PLhW3qG5bs-L_ZCOA4zNPSoGbnVQ-rp_dG
+    
+
+++ Full course ( 3 hours )
+  https://www.youtube.com/watch?v=FX322RVNGj4
+
+  1:33:00
+  
+  
+--------------------------------------------------
+ ###  Jenkins Basics
+--------------------------------------------------
+
+What is Jenkins?
+----------------
+  - Java application
+  - Used for continuous integration and continuous delivery
+  - Jenkins
+      1. Grabs the code from repository (e.g. Git)
+      2. Builds artifacts (exe, website, app, ...)
+      3. Runs tests (Nunit, MSTest, Cradle, StyleCop, JSHint, ...)
+      4. Publishes output to live server
+      5. Reports back
+      
+      --> This process is performed as soon as a developer checks in code.
+      ==> Frequent testing of small changes.
+      ==> If there are errors you can fix the problem easily.
+
+  Continuous integration tools
+    Jenkins
+    Bamboo
+    Apache Gump - for Java projects
+    Bildbot
+    Travis CI   - for hosted github projects
+
+    
+Jenkins features
+----------------
+    
+  - Easy installation (self contained Java program)
+  - Easy configuration
+  - Plugins
+  - Extensible
+  - Distributed
+  
+
+Jenkins pipeline
+----------------
+
+  - Code commit
+  - Build (of the code)
+  - Test
+  - Release
+  - Deploy and deliver
+  
+  
+Jenkins architecture
+--------------------
+
+  - Source code repository
+
+  - CI server (Jenkins)
+  - Build server (e.g. Maven)
+  - Test server (e.g. Selenium)
+  
+  - Production server
+  
+  Master-slave architecture
+  
+     Jenkins Server (Master)  
+       - Jenkins slave 1 (Windows)
+       - Jenkins slave 2 (Linux)
+       - Jenkins slave 3 (Mac)
+
+
+========================================================================================================================
+========================================================================================================================
+#### Install Jenkins
+--------------------------------------------------------------------------------
+
+--------------------------------------------------
+ ###  Prerequisites for Installation
+--------------------------------------------------
+
+  Install types
+    - Windows or Linux service
+    - Generic war file
+    - Install on any Java based wed server (old way of running Jenkins)
+    
+  Prerequisites
+    - JRE (JDK 1.7 or 1.8)
+    - 2GB RAM
+    - Set JAVA_HOME env variable to point to your JDK base directory
+        e.g. C:\Program Files\Java\jdk1.8.0_162
+    - Add JAVA_HOME to your PATH variable   
+
+
+--------------------------------------------------
+ ###  Install Steps
+--------------------------------------------------
+
+   1. Download Jenkins
+       - Go to the Jenkins web site (jenkins.io)
+   2. Use the LTS release
+   3. Look for your OS
+       The OS will show you the download and install commands.
+
+       I had issues with the repository install.
+       Use the war file instead.
+         - Install the jave runtime env (jre)
+         
+             $ java                            # this will show you install options
+             $ sudo apt install default-jre    # you can run it with JRE only
+             $ sudo apt install default-jdk    # do do some stuff you may need JDK
+            
+             $ java -version
+             $ javac -version
+             
+             
+         - Download the war file
+         - Run the war file
+             $ jafa -jar jenkins.war
+
+             It will show the password. Save it!
+             
+                7ba876e01bff4cc19e049a252c9dcc73
+                
+                This may also be found at: 
+                    /home/udo/.jenkins/secrets/initialAdminPassword
+
+    4. Run jenkins from a web browser            
+
+         URL = localhost:8080
+         
+         Jenkins will ask for the password.
+             
+    5. Install plugins
+         
+         Some plugins rely on other plugins. It's best to start with
+         the recomended plugins and add additional plugins later.
+               
+         The plugins (and other stuff) is under ~/.jenkins        
+
+    6. Get started with Jenkins
+    
+    
+--------------------------------------------------
+ ###  Configure Jenkins
+--------------------------------------------------
+
+-- Jenkins typical configurations
+
+    Set JENKINS_HOME variale
+      - To "~/.jenkins" of the user running Jenkins if you run the war file
+        (e.g. /home/udo/.jenkins)
+
+    Console -> Global Tool Configuration
+      Configure all the tools you are using 
+      
+    Note:
+      Some options you only see after you install the plugin.
+      E.g. "Manage and Assign Roles" requires the role base plugin to be installed.
+      
+
+========================================================================================================================
+========================================================================================================================
+#### Use Jenkins
+--------------------------------------------------------------------------------
+
+--------------------------------------------------
+ ###  Change a Job
+--------------------------------------------------
+
+Edit existing job
+  -- Select the folder (e.g. "Oracle")
+    Jenkins -> Oracle
+  -- Select the job (e.g. "Oracle-DB-Backup")
+    Jenkins -> Oracle -> Oracle-DB-Backup
+  -- Edit the job
+    Click "Configure" on the left hand menu.
+    Configure -> General Tab
+    
+Add parameters to the job
+  General Tab 
+    -> [x] This project is parameterized 
+    -> Click ((Add Parameter)) -> [[String Parameter]]     # You may choose a different parameter type
+    
+   
+Add a build step (e.g. "execute shell")
+
+  Build -> Click ((Add build step)) -> [[Execute shell]]
+  
+  Command (example):
+  >>>>>
+  ssh -o StrictHostKeyChecking=no -i ${FESJENK_KEY_PATH} fesjenk@{DB_HOST} << EOF
+    sudo su - oracle
+    /home/oracle/scripts/backup-c.sh;
+  EOF
+  <<<<<
+
+
+Finish
+  Click ((Apply)) -> Click ((Save))
+  
+
+--------------------------------------------------
+ ###  Run a Job
+--------------------------------------------------
+
+  -- Select the job (e.g. "Oracle-DB-Backup")
+    Jenkins -> Oracle -> Oracle-DB-Backup
+  -- Run the job
+    Click "Build with Parameters" on the left hand menu.
+  -- Monitor the job progress
+    Click on the "ball" of the top item of the "Build History" on the left hand below the menu.
+    The top job should show the progress bar.
+    This will give you the console output of the job.
+
+
+--------------------------------------------------
+
+
+xxx continue tutorial
+    
+
+-- Create new users and manage permissions
+
+-- Build freestyle jobs and schedule its run
+
+-- Integrate GitHub with Jenkins
+
+-- SMTP configuration for sending emails
+
+-- Deploy Maven based web-app ot Tomcat server
+
+-- Distributed build: Master - Slave configuration and set-up
+
+-- Backing up Jenkins
+
+
+
+
+<<< EOF >>>

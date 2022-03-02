@@ -1,0 +1,71 @@
+
+Ripjar
+
+ https://ripjar.com/
+ 
+ - Screening clients in real time against Adverse Media and Watchlists
+ 
+  - our platform: Labyrinth provides seamless automation and fusion over any data source
+  - Unique Data-Driven Matching Engine - AI trained on billions of names gives unprecedented accuracy in watchlist and adverse media monitoring.
+  
+  Cybercrime. Money Laundering. Corruption. Terrorism.
+Labyrinth gives organisations the edge to tackle
+some of the most difficult challenges that face society.
+To connect the dots and see the big picture.
+
+Federate searches across all data sources. Real-time monitoring to make sense of your data automatically, alerting on changes in risk. Collaborate and share knowledge securely across the enterprise.
+
+Our Labyrinth platform supports leading global companies and governments to detect criminal behaviour
+
+
+Next
+Generation
+Risk
+Screening
+
+
+Partners
+  accenture
+  dow jones risk & compliance
+  
+data intelligence platform, Labyrinth
+  --> acts as a data warehouse?
+
+Ripjar’s technology helps leading institutions and government agencies address criminal threats, including money laundering, fraud and terrorism. Utilising proprietary artificial intelligence technology, Labyrinth uncovers new risks, and reduces false positives by over 90%. Labyrinth enables human analysts to make better informed decisions with speed and accuracy, saving significant cost and time for its clients.
+
+data analytics company
+
+ Labyrinth – a scalable, secure, entity analytics platform, empowers global institutions to identify complex criminal networks and behaviours that undermine their security.
+ 
+ Ripjar built Labyrinth, a scalable, secure, entity analytics processing platform.
+ 
+ 
+ 
+
+  
+--------------  
+
+Location: Bristol. (WFH ROLE)
+
+My client is a cyber/hacking business based in the South West. They specialise in web development & cyber security for start-up to large scale organisations. Working with highly skilled professionals using cutting edge technologies.
+
+
+ Things to know and preparation tips:
+
+    They will ask you what you know about the business this far so please use the websites 'About us' section to prepare before the interview.
+    
+    Questions from you – Try to prepare at least 5 questions for them before the interview (Shows you’re prepared)
+    
+    Few tech questions related to the role and your experience to date. 
+
+If you require any more information please let me know! 
+
+
+  - How big is the team?
+  - What does the team consist of? DevOps, Developers, ... ?
+  - Does every body work from home? How would this be in future?
+  
+  - The founders have been working at the British Government Communications Headquarters (GCHQ). 
+    Does this mean that a lot of the work comes from the UK Government?
+    
+    

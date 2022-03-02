@@ -1,0 +1,107 @@
+
+
+
+Backup / Recovery
+=================
+
+
+Q. If you have to advise a backup strategy for a new application, 
+   how would you approach it and what questions will you ask? 
+A.  
+    - What kind of applications is it?
+    - Does it need 24x7 uptime? If yes, use online backups.
+    - How big is the database? Consider incremental backups or BCVs
+      if neccessary.
+    - How frequently does the data change?
+    - What is an acceptable meantime to recover?
+    - Consider a standby database.
+    - If a Veritas cluster is used, you can do a BCV split (split of the
+      mirroed disks) to make an image backup of the data files.
+    - What retention period is needed for the backups?
+    - What is the time interval (window) in which the cold backup can run?
+
+
+- How would you perform a database backup?
+    - Cold or off-line backup
+    - Hot or on-line backup
+    - Exports
+    - Backups using RMAN. 
+    - Image backup
+    - User written
+- Why did you choose this way?
+- Are there other ways of doing this?
+
+
+- What problems may you face when you clone a prod database to UAT?
+    1. Not enough disk space.
+    2. UAT database name is different.
+    3. Different Oracle version.
+    4. RMAN backup is expired in catalog.
+    5. File system layout is different.
+
+- How can you work around these problems?
+    1. Not enough disk space.
+       Restore only part of the database.
+        -> skip tablespaces in RMAN duplicate command
+        OR
+        -> create RMAN restore script for only the data files needed 
+        -> create a create controle file script for only the restored files
+        -> remove the datafiles from dictionary (offline drop)
+    2. UAT database name is different.
+       Rename the cloned database.
+        - RMAN duplicate command.
+        OR
+        - Recreate the control file with "set name".
+        OR
+        - Use nid utility.
+    3. Different Oracle version.
+        - Clone to old version and then upgrade.
+        - Use export import if database is small.
+
+    4. RMAN backup is expired in catalog.
+        - Use control file to restore.
+        - Catalog the expired backup pieces. 
+            -> What is the problem with this?
+                -> Archive log backups on prod will expire them again.
+        - Use old (saved) version of RMAN catalog.
+    5. File system layout is different.
+        - Rename the files during restore.
+            RMAN: db_file_name_convert, log_file_name_convert
+                  set newname for datafile 1 TO '/oradata/DUP/system01.dbf';
+            Old style clone:
+                Change file names in create control file command.
+
+- When a big table (10GB) get dropped by accident, how do you get it back?
+    - Export/import
+        -> table is to big for import.
+    - Restore only the tablespace for this table.
+        alter tablespace <ts> offline immediate;
+        restore tablespace
+    - Use "flashback table" to restore a old version of a table
+      Use "flashback drop" to restore a dropped table
+        -> works if the undo information is still available
+
+    
+- Archive log area is full. You are using RMAN for backups. What do you do?
+    - Run an RMAN archivelog backup.
+        backup archivelog all delete input;
+    - Move/delete the archvie log files
+        - delete files
+        - crosscheck the archivelog files
+
+
+How do you 
+    - Recover from loss of a datafile
+        -> restore datafile, recover datafile
+        If you don't have a backup for the file:
+            -> create an empty file
+            -> restore the archive log files
+            -> recover the datafile
+    - Recover from corrupted redo logs
+        -> add new redo log group and drop the corrupted one
+    - Recover from loss of the undo tablespace
+        -> create new undo ts (undo2), set undo_tablespace=unod2, drop old undo ts
+
+
+
+

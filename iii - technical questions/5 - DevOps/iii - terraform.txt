@@ -1,0 +1,107 @@
+<<< iii - terraform.txt >>>
+
+https://www.whizlabs.com/blog/terraform-interview-questions/
+
+https://www.onlineinterviewquestions.com/terraform-interview-questions/
+
+https://www.simplilearn.com/tutorials/aws-tutorial/aws-interview-questions
+
+
+Moreover, tell them about some similar tools, for example, Jenkins, Kubernetes, Docker, Git, and more.
+
+
+------------------------------
+
+Q: What is a state file?
+
+A: 
+   - A store containing the resources has created against a given script.
+   - Can be stored in a file system file or in AWS S3.
+   - State file is used ot apply changes compared to what is in your script.
+
+------------------------------
+
+Q. What type of terraform file are there?
+
+A:
+   - Terraform scans the direcory and reads all (tf) files. The files can have any name.
+   - Example file names:
+       main.tf         - Main terraform file. 
+       variables.tf    - Variable declarations.
+       outputs.tf      - 
+       data_sources.tf - 
+       <app-name>.tf   - 
+
+------------------------------
+
+Q. What are the most common terraform commands:
+
+A:
+   terraform init           # Initialize the terraform working directory
+                              This will download provider specific plugins (e.g. for AWS)
+                             
+   terraform get-update     # Update terraform modules
+   
+   terraform plan           # Show what changes will be made
+  
+   terraform apply          # Apply all *.tf plans in the directory
+  
+
+   terraform destroy [<dir>]         # Destroy the resources defined in your *.tf files
+   terraform taint [<resource>]      # Taint a resource (tainted resources will be destroyed and re-created)  
+
+   terraform plan -out=path [<dir>]  # Path to save generated execution plan.
+   terraform validate                # Validate the terraform configuration
+   terraform show [<path>]           # Check the current state (path to state or plan file)
+   terraform state list              # List terraform modules (resources)
+   terraform output                  # Show output variables
+
+------------------------------
+
+Q: How do you auto approve a terraform command?
+
+A:
+   terraform apply -auto-approve
+
+------------------------------
+
+Q: What are terraform workspaces?
+
+A:
+
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+------------------------------
+
+
+
+
+
+<<< EOF >>>

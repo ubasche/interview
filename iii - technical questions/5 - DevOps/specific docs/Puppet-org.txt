@@ -1,0 +1,567 @@
+<<< Puppet.txt >>>
+
+
+Contents
+--------
+
+#### Overview
+ ###  What is Puppet
+ ###  Puppet architecture
+ ###  The working of Puppet
+  
+#### Example: Install Puppet and provision Apache
+
+#### Write Puppet Code
+ ###  Write Puppet Manifests
+ ###  Components of manifests
+  ##   Variables
+  ##   Loops
+  ##   Conditions
+ ###  Classes
+ ###  Modules
+  
+
+========================================================================================================================
+========================================================================================================================
+#### Overview
+--------------------------------------------------------------------------------
+
+--------------------------------------------------
+ ###  What is Puppet
+--------------------------------------------------
+
+  - Configuration managemet tool
+  - It is also used as a deployment tool
+  - Puppet implements infrastructure as code
+  - Puppet is written in the Ruby language
+
+
+--------------------------------------------------
+ ###  Puppet architecture
+--------------------------------------------------
+    
+  Puppet master 
+    Modules consist of manifests, templates and files
+    
+      Manifests: Code written in Ruby
+      Templates: Data. Templates are never sent to the client.
+      Files:     Static content. Files are sent to the client.
+      
+    CA - Certificat Authority
+    
+    
+  Puppet clients
+  
+    Agent:  Does comunication between master and client.
+    
+    Facter: 
+      - Collects all the data about the present state of the client and sents it to the master.
+      - The master then compares the data against the manifest.
+      - Depending on the results of this comparisson, manifests are sent to the client.
+
+
+--------------------------------------------------
+ ###  The working of Puppet
+--------------------------------------------------
+            
+  You have an encrypted channel between master and client for communication.
+  SSL certificates are used.
+  
+  1. You have a Puppet master and a server (which is not yet a client).
+  2. Client sends it's cerfificate to the master.
+  3. Master singes the certificate and sends it back to the client.
+     Now the client is officially a Puppet client.
+  4. Now the client can request data from the master and the master will send the data.
+     The config data (manifest and files).
+     
+  5. The factor collects state (facts) of the client and sends it to the master.
+  6. The facts are compared against the manifest.
+  7. Master compiles the manifests into catalogs.
+  8. The catalogs (containing the difference between fact and manifest) are send
+     to the client.
+  9. The agent executes the catalogs on the client.
+ 10. A report is generated and send back to the master.
+ 11. The master keeps a record of all the changes made on the client.
+ 
+ The entire process is repeated at regular intervals, ensuring the client systems
+ are up to date.
+ You can set the interval for the process (e.g. 30 minutes).
+  
+  
+
+========================================================================================================================
+========================================================================================================================
+#### Example: Install Puppet and provision Apache
+--------------------------------------------------------------------------------
+  
+Set overview
+------------
+
+  1. Install Puppet server
+  2. Start Puppet server service
+  3. C - Install Puppet client
+  4. C - Start the agent service. The SSL certificate gets created automatically.
+  5. Master signs the certificate.
+  6. Write the manifest.
+  7. C - Run the agent service. Manifest/catalogs are executed on the node.
+  
+  
+Detailed steps
+--------------
+
+1. M - Install and start Puppet server
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  1. Set hostname on the master node to "puppet"
+  
+    $ hostnamectl set-hostname puppet
+    $ hostname
+    
+  2. Get the ip address of the master host
+  
+    $ ifconfig
+    
+  3. Stop the firewall to make sure the traffice goes through
+  
+    $ sudo systemctl stop firewalld
+    
+  4. Download puppet
+  
+    $ sudo rpm -Uvh https://yum.puppetlabs.com/puppetlabs-release-pc1-el-7.noarch.rpm
+    
+  5. Install puppet server
+  
+    $ sudo yum -y install puppetserver
+    
+  6. Configure puppet server 
+  
+    -- Change Java memory to 512MG instead of 2GB
+    
+      $ sudo vi /etc/sysconfig/puppetserver
+    
+      .....
+      JAVA_ARGS="-Xms512m -Xmx512m -XX:MaxPermSize=256m"
+      .....
+  
+  7. Start the puppet service
+  
+    $ sudo systemctl start puppetserver
+    $ sudo systemctl enable puppetserver
+
+    
+2. C - Install Puppet client and start the agent
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  1. Edit /etc/hosts and add teh puppet master host
+  
+    $ sudo vi /etc/hosts
+    
+    .....
+    11.11.11.11 puppet puppet-master
+    .....
+    
+  2. Download puppet
+  
+    $ sudo rpm -Uvh https://yum.puppetlabs.com/puppetlabs-release-pc1-el-7.noarch.rpm
+
+  3. Install puppet agent
+  
+    $ sudo yum -y install puppet-agent
+    
+  4. Start the puppet agent service
+  
+    $ sudo /opt/puppetlabs/bin/puppet resource service puppet ensure=running enable=true
+    
+    ==> This will start the agent service and generate the certificate.
+        The certificate name will be the name of the client host.
+    
+    
+3. M - Check and sign the certificate
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
+    
+  1. Check the certificate on the master host and sign it.  
+    
+    $ sudo /opt/puppetlabs/bin/puppet cert list
+    
+    $ sudo /opt/puppetlabs/bin/puppet cert sign <clienthost.clientdomain>
+
+
+4. M + C Test the connectivity
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+  1. M - Create a manifest placeholder file
+    
+    $ sudo touch /etc/puppetlabs/code/environment/production/manifests/sample.pp
+    
+  2. C - Run the agent
+  
+    $ /opt/puppetlabs/bin/puppet agent --test
+    
+    
+5. M - Add content ot the manifest file
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  1. M - Add code to the manifest file
+    
+    $ sudo vi /etc/puppetlabs/code/environment/production/manifests/sample.pp
+
+    >>>>>
+    node 'clienthost.clientdomain' {
+      package{ 'httpd' :
+      ensure => installed,
+      }
+     }
+    <<<<<
+
+    --> Executes the manifest file on host: clienthost.clientname
+        Installs teh httpd package.
+        
+        
+  2. C - Test the manifest
+  
+    $ /opt/puppetlabs/bin/puppet agent --test
+
+  
+  3. C - Start the apache service
+  
+    $ apachectl start
+    
+    
+  4. Check Apache by starting a web browser on the client host
+  
+    URL: file://usr/share/doc/HTML/index.html
+    
+    URL: localhost    
+    
+       ==> This should show the Atache testing page
+       
+
+
+========================================================================================================================
+========================================================================================================================
+#### Write Puppet Code
+--------------------------------------------------------------------------------
+
+--------------------------------------------------
+ ###  Write Puppet Manifests
+--------------------------------------------------
+
+Code Basics for Puppet
+----------------------
+
+-- Resource
+  
+  A resource can be anything, e.g. file, command, package, ...
+
+  resource_type {'resource_name':
+    attribute => value
+    ...
+  }
+       
+
+  file {'path-to-file':
+  package {'package-name':
+  
+  
+  e.g:
+    package {'nginx':
+      ensure => 'insatlled',
+    }
+
+
+    user{'mitchell':
+      ensure => present,
+      udi    => '1000',
+      gid    => '1000',
+      shell  => '/bin/bash',
+      home   => '/home/mitchell',
+    }
+    
+    
+  ~~ List resource types
+  
+    $ puppet resource --types  
+    
+
+-- Manifest
+
+  A manifest is a collection of resource declarations, using the extension ".pp"
+  
+    .....
+    package {'nginx':
+      ensure => 'insatlled',
+    }
+
+    file {'/tmp/hello.txt':
+      ensure => 'present',
+      content => 'hello world',
+      mode => '0644',
+    }
+    
+    exec {"Test":
+      command => '/bin/echo apache2 is installed > /tmp/status.txt',
+      onlyif => /bin/which apache2',
+    }
+    .....
+    
+
+Example
+-------
+
+  1. Create a manifest
+  
+    $ cd /etc/puppet/code/
+    $ mkdir -p environments/production/manifests
+    $ cd environments/production/manifests
+    
+    $ sudo vi site.pp
+    
+      >>>>>
+      node default{
+      
+      package {'nginx':
+        ensure => 'installed',
+      }
+      
+      file {'/tmp/status.txt':
+        ensure => 'present',
+        content => 'Nginx installed',
+        mode => '0644',
+      }
+  
+      }
+      <<<<<
+      
+  2. C - Apply the manifest
+
+   $ sudo puppet agent --test
+   
+  3. Test nginx installation
+  
+    URL: <ip address of client host>
+    
+    
+--------------------------------------------------
+ ###  Components of manifests
+--------------------------------------------------
+
+----------------
+  ##   Variables
+----------------
+  
+  Variable can be declared anywhere in the manifest file.
+  
+  .....
+  $text = "hello world"
+  
+      file {'/tmp/hello.txt':
+        ensure => 'present',
+        content => $text,
+        mode => '0644',
+      }
+  
+  .....
+
+
+------------
+  ##   Loops
+------------
+
+  .....
+  $packages = ['nginx','mysql-server']
+  
+  pacakge {$packages:
+    ensure => 'installed'
+  }  
+  .....
+
+
+-----------------
+  ##   Conditions
+-----------------
+
+  ~~ Run command if test is succeeds
+
+    The commad will run "onlyif" the test returns "0" (succeeds).
+    It runs when test succeeds. 
+  
+    exec {"Test":
+      command => '/bin/echo apache2 is installed > /tmp/status.txt',
+      onlyif => /bin/which apache2',
+    }
+  
+  
+  ~~ Run command if test fails
+  
+    The commad will run "unless" the test returns "0" (succeeds).
+    It runs when test fails. 
+  
+    exec {"Test":
+      command => '/bin/echo apache2 is not installed > /tmp/status.txt',
+      path    => ["/usr/bin","/usr/sbin","/bin"],
+      unless  => /bin/which apache2',
+    }
+
+
+  ~~ more examples
+  
+    unless => "test -e /tmp/some_file",
+    
+
+--------------------------------------------------
+ ###  Classes
+--------------------------------------------------
+
+-- Class definition
+
+  Defining a class makes the class available to be used in manifests.
+  
+  
+  class example_class {
+    ...
+    code
+    ...
+  }
+  
+  
+-- Class declaration
+
+  include example_class              # normal class declaration
+  
+  class { 'example_class': }         # resource-like class declaration
+  
+  
+  Using resource-like class declaration allows you to specify class parameters, 
+  which overwrite the default values of the class declaration.
+  
+  node 'host2' {
+    class {'apache': }                   # use apache module
+    apache::vhost { 'example.com':       # define vhost resource
+      port   => '80',
+      decroot => '/var/www/html',
+    }
+  }
+  
+
+--------------------------------------------------
+ ###  Modules
+--------------------------------------------------
+
+A module is a collection of manifests and data (such as facts, files and templates). 
+They have a specific directory structure.
+
+To add a module to Puppet, place it in the /etc/puppet/modules directory.
+
+
+Exapmle: Install LAMP by creating a new module
+----------------------------------------------
+  
+-- Create the directory structure for the module
+
+  $ cd /etc/puppet/modules
+  $ sudo mkdir -p lamp/manifests
+
+
+-- Create the moudules .pp file
+
+  $ sudo vi lamp/manifests/init.pp
+  
+  >>>>>
+  # execute 'apt-get update'
+  exec { 'apt-update':                    # exec resource named 'apt-update'
+    command => '/usr/bin/apt-get update'  # command this resource will run
+  }
+
+  # install apache2 package
+  package { 'apache2':
+    require => Exec['apt-update'],        # require 'apt-update' before installing
+    ensure => installed,
+  }
+
+  # ensure apache2 service is running
+  service { 'apache2':
+    ensure => running,
+  }
+
+  # install mysql-server package
+  package { 'mysql-server':
+    require => Exec['apt-update'],        # require 'apt-update' before installing
+    ensure => installed,
+  }
+
+  # ensure mysql service is running
+  service { 'mysql':
+    ensure => running,
+  }
+
+  # install php5 package
+  package { 'php5':
+    require => Exec['apt-update'],        # require 'apt-update' before installing
+    ensure => installed,
+  }
+
+  # ensure info.php file exists
+  file { '/var/www/html/info.php':
+    ensure => file,
+    content => '<?php  phpinfo(); ?>',    # phpinfo code
+    require => Package['apache2'],        # require 'apache2' package before creating
+  }
+  <<<<<
+  
+
+-- Use the module in the main manifest
+
+  $ sudo vi /etc/puppet/manifests/site.pp
+  
+  Basic .pp file:
+  .....
+  node default { }
+  
+  node 'lamp-1' {
+    include lamp
+  }
+  .....
+  
+  
+  Using parameters:
+    The apache module can be passed parameters that override the default 
+    behavior of the module. 
+    Within the lamp-1 node block, use a resource-like class declaration to use the 
+    apache module (the in-line comments explain each line).
+  .....
+  node default { }
+  
+  node 'lamp-1' {
+    class { 'apache':                 # use the "apache" module
+      default_vhost => false,         # don't use the default vhost
+      default_mods => false,          # don't load default mods
+      mpm_module => 'prefork',        # use the "prefork" mpm_module
+    }
+    
+    include apache::mod::php          # include mod php
+      apache::vhost { 'example.com':  # create a vhost called "example.com"
+      port    => '80',                # use port 80
+      docroot => '/var/www/html',     # set the docroot to the /var/www/html
+    }
+  
+    include lamp
+  }
+  .....
+  
+
+-- C - Apply the changes
+
+  $ sudo puppet agent --test
+  
+  
+-- Verify that Apache and PHP are working
+
+  Go to the public IP address of lamp-1 in a web browser.
+  
+  URL: http://lamp_1_public_ip_address/info.php
+  
+  You should see the information page for Php.
+  
+
+
+<<< EOF >>>
